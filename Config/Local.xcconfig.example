@@ -1,0 +1,4 @@
+// Copy to Local.xcconfig, then use your own Apple Developer Team ID and a unique prefix.
+DEVELOPMENT_TEAM = YOURTEAMID
+BUNDLE_ID_PREFIX = com.yourname
+APP_GROUP_IDENTIFIER = group.com.yourname.InstaBlock

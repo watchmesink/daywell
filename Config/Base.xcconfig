@@ -1,0 +1,6 @@
+// Override these in Local.xcconfig (ignored by Git) for development signing.
+BUNDLE_ID_PREFIX = org.opensource
+APP_GROUP_IDENTIFIER = group.$(BUNDLE_ID_PREFIX).InstaBlock
+// DEVELOPMENT_TEAM is intentionally empty until configured with your own team.
+DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"

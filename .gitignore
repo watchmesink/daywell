@@ -1,0 +1,11 @@
+.DS_Store
+.idea/
+*.iml
+.build/
+build/
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+Config/Local.xcconfig
+*.mobileprovision
+*.p12

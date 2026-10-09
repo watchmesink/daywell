@@ -1,0 +1,29 @@
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3f4f2;
+  color: #15161b;
+  line-height: 1.6;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: #244f39; text-underline-offset: 0.2em; }
+a:focus-visible { outline: 3px solid #86bb64; outline-offset: 3px; }
+header { background: #0b0817; color: #fff; padding: 4rem 1.5rem 4.5rem; }
+header .wrap, main, footer { width: min(100%, 760px); margin: 0 auto; }
+.brand { display: inline-flex; align-items: center; gap: 0.8rem; color: #fff; font-weight: 700; text-decoration: none; font-size: 1.1rem; }
+.brand img { width: 38px; height: 38px; border-radius: 9px; }
+header h1 { max-width: 680px; font-size: clamp(2.2rem, 7vw, 3.6rem); line-height: 1.08; letter-spacing: -0.04em; margin: 3rem 0 0.8rem; }
+header p { max-width: 620px; margin: 0; color: #d9d9df; font-size: 1.1rem; }
+main { padding: 2rem 1.5rem 4rem; }
+section { background: #fff; border-radius: 22px; padding: 1.5rem 1.75rem; margin: 1.25rem 0; }
+h2 { font-size: 1.25rem; line-height: 1.3; margin: 0 0 0.8rem; }
+p { margin: 0.7rem 0; }
+ul, ol { padding-left: 1.4rem; }
+li + li { margin-top: 0.5rem; }
+.note { color: #505663; }
+.todo { color: #8d2600; font-weight: 700; }
+footer { padding: 0 1.5rem 3rem; color: #505663; font-size: 0.9rem; }
+footer a { margin-right: 1.25rem; }
+@media (max-width: 540px) { header { padding-top: 2rem; } section { padding: 1.25rem; } }
