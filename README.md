@@ -2,6 +2,8 @@
 
 # Daywell
 
+<a href="https://buymeacoffee.com/glebmelnikov"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" width="180"></a>
+
 **Make room for your day.**
 
 Daywell is a free, open-source iPhone app that helps you spend less time doomscrolling. Choose distracting apps such as Instagram, TikTok, or X, set daily blocking windows and a shared time allowance, and let Apple’s Screen Time APIs enforce your routine.
@@ -104,12 +106,6 @@ xcodebuild -project Daywell.xcodeproj -scheme Daywell \
 | `Config/` | Build settings, generated Info plists, and entitlements |
 
 See [architecture and limitations](docs/ARCHITECTURE.md) for scheduling, recovery, privacy, and time-zone behavior.
-
-## Support development
-
-Daywell is free and open source. If it helps you, you can support its development with a coffee.
-
-[☕ Buy me a coffee](https://buymeacoffee.com/glebmelnikov)
 
 ## Publishing
 
