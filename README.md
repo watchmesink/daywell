@@ -105,6 +105,12 @@ xcodebuild -project Daywell.xcodeproj -scheme Daywell \
 
 See [architecture and limitations](docs/ARCHITECTURE.md) for scheduling, recovery, privacy, and time-zone behavior.
 
+## Support development
+
+Daywell is free and open source. If it helps you, you can support its development with a coffee.
+
+[☕ Buy me a coffee](https://buymeacoffee.com/glebmelnikov)
+
 ## Publishing
 
 The [App Store release kit](publishing/README.md) contains Family Controls distribution setup, listing copy, review notes, and release status. Version 1.0 (2) was submitted to App Review on October 9, 2026.
