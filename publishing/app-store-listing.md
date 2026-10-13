@@ -11,7 +11,7 @@
 | Price | Free ($0.00), saved in App Store Connect for all 175 territories on October 9, 2026. |
 | Age rating | Apple-calculated 9+ in 172 regions, with country-specific ratings elsewhere |
 | Copyright | 2026 Daywell contributors |
-| Version | 1.0 |
+| Version | 1.1 (build 4 uploaded October 13, 2026) |
 | Minimum OS | iOS 17.4 |
 | Keywords | focus,distraction,doomscrolling,social media,limit,schedule,routine,wellbeing,habit,productivity (96/100; avoids repeating name and subtitle words) |
 | Privacy Policy URL | https://daywell-support.tunedtoast2.chatgpt.site/privacy.html |
