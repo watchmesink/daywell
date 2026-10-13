@@ -11,7 +11,7 @@
 | Price | Free ($0.00), saved in App Store Connect for all 175 territories on October 9, 2026. |
 | Age rating | Apple-calculated 9+ in 172 regions, with country-specific ratings elsewhere |
 | Copyright | 2026 Daywell contributors |
-| Version | 1.1 (build 4 uploaded October 13, 2026) |
+| Version | 1.1 (4), submitted for review October 13, 2026 |
 | Minimum OS | iOS 17.4 |
 | Keywords | focus,distraction,doomscrolling,social media,limit,schedule,routine,wellbeing,habit,productivity (96/100; avoids repeating name and subtitle words) |
 | Privacy Policy URL | https://daywell-support.tunedtoast2.chatgpt.site/privacy.html |
@@ -45,6 +45,13 @@ BUILT TO HOLD
 • When a block is active, iOS shows a blocking screen with a Close button and no skip option.
 
 Daywell requires Screen Time access on iOS 17.4 or later. You can turn it off in Settings or uninstall the app at any time. iOS controls Screen Time callbacks, so activity updates and blocking can be delayed.
+
+## What’s New in 1.1
+
+• Block whole categories and websites, not just individual apps.
+• New light theme with a pastel sunset, and a matching light Home Screen icon on iOS 18.
+• An animated ocean sunset on the dashboard and onboarding.
+• Refreshed launch screen and clearer rule editors.
 
 ## Screenshots
 
