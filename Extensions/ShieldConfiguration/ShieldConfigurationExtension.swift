@@ -16,6 +16,10 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         makeConfiguration(name: webDomain.domain ?? "This website")
     }
 
+    override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
+        makeConfiguration(name: webDomain.domain ?? "This website")
+    }
+
     private func makeConfiguration(name: String) -> ShieldConfiguration {
         let now = Date()
         let snapshot = try? ProtectionEnvironment.repository().read().active
@@ -34,8 +38,8 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             icon: Self.icon,
             title: .init(text: "\(name) can wait.", color: .label),
             subtitle: .init(text: explanation + "\n\nTime for something else.", color: .secondaryLabel),
-            primaryButtonLabel: .init(text: "Close", color: .black),
-            primaryButtonBackgroundColor: UIColor(red: 0.77, green: 0.91, blue: 0.48, alpha: 1),
+            primaryButtonLabel: .init(text: "Close", color: .white),
+            primaryButtonBackgroundColor: .systemBlue,
             secondaryButtonLabel: nil)
     }
 

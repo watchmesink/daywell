@@ -4,41 +4,69 @@
 | --- | --- |
 | Platform | iOS (iPhone) |
 | Bundle ID | dev.glebmelnikov.InstaBlock |
-| Name | Current App Store Connect name: “Daywell: Control Screen time” (provisional; “Daywell” was unavailable) |
-| Subtitle | Make room for your day |
+| Name | Daywell: Simple App Blocker (27/30). Replaces “Daywell: Control Screen time”; “Daywell” alone was unavailable. |
+| Subtitle | Screen time, free & private (27/30) |
+| Promotional text | Free and open source. No account, no subscription, no ads, no analytics. Pick the apps that eat your time, set a daily routine, and let iOS keep it in place. (157/170) |
 | Primary category | Productivity |
 | Price | Free ($0.00), saved in App Store Connect for all 175 territories on October 9, 2026. |
 | Age rating | Apple-calculated 9+ in 172 regions, with country-specific ratings elsewhere |
 | Copyright | 2026 Daywell contributors |
-| Version | 1.0 |
+| Version | 1.1 (4), submitted for review October 13, 2026 |
 | Minimum OS | iOS 17.4 |
-| Keywords | screen time,focus,app blocker,digital wellbeing,habits,limits |
+| Keywords | focus,distraction,doomscrolling,social media,limit,schedule,routine,wellbeing,habit,productivity (96/100; avoids repeating name and subtitle words) |
 | Privacy Policy URL | https://daywell-support.tunedtoast2.chatgpt.site/privacy.html |
 | Public support email | melnikovglebdm@gmail.com |
 | Support URL | https://daywell-support.tunedtoast2.chatgpt.site/support.html |
 
 ## Description
 
-Make a little more room in your day. Daywell helps you set boundaries for the apps you choose, then lets iOS keep those boundaries in place.
+Make room for your day.
 
-Choose individual apps in Apple's private Screen Time picker. Set daily block windows, a shared daily allowance, or both. Time across all selected apps adds up toward the same allowance. When a block is active, the system shows a blocking screen with a Close button and no in-app skip option.
+Daywell is a simple, private app blocker for iPhone. Choose the apps that eat your time, set a daily routine, and let Apple’s Screen Time keep it in place. No account, no subscription, no ads.
 
-Start with a morning block from 06:00 to 10:00, an evening block from 22:00 to midnight, and a 30-minute shared allowance, then adjust the routine to fit your day. You can use up to seven daily block windows. Lower allowances apply immediately; higher allowances and app removals take effect the next day after any overnight block.
+SIMPLE BY DESIGN
+• Pick apps, whole categories, or websites in Apple’s private Screen Time picker.
+• Add up to seven daily block windows, including overnight.
+• Set one shared daily allowance that counts time across everything you selected.
+• Use blocks, an allowance, or both.
+• See what’s blocked, when, and today’s usage on one dashboard.
 
-Daywell works without an account, subscription, ads, analytics, or a server. Your selected apps and rules stay on your device. Screen Time access is required. You can turn it off in iOS Settings or uninstall Daywell; iOS may delay Screen Time activity and blocking updates.
+PRIVATE. NO ACCOUNT.
+• Nothing to sign up for and nothing to sign in to.
+• Daywell never sees which apps you chose; iOS gives it only opaque tokens.
+• No server, no analytics, no tracking, no advertising. Your rules stay on your iPhone.
 
-## Screenshot plan
+FREE, WITH NOTHING TO UNLOCK
+• No subscription, no in-app purchases, no trial that expires.
+• Open source under the MIT license.
 
-Use real captures from the current Daywell release build, with no simulator preview banner. Capture:
+BUILT TO HOLD
+• Tightening a limit applies immediately. Loosening one waits until the next day, so a weak moment can’t undo your plan.
+• When a block is active, iOS shows a blocking screen with a Close button and no skip option.
 
-1. Onboarding with default routine visible.
-2. Activated dashboard showing the status card, selected apps, blocks, and allowance.
-3. Daily blocks editor showing editable windows.
-4. Shared allowance editor or the app selection flow, provided no private selections appear.
+Daywell requires Screen Time access on iOS 17.4 or later. You can turn it off in Settings or uninstall the app at any time. iOS controls Screen Time callbacks, so activity updates and blocking can be delayed.
 
-Provide iPhone screenshots in the display sizes App Store Connect asks for. The checked-in app icon is ready; App Store Connect normally obtains it from the uploaded build. The existing `build/screenshots/onboarding.png` is obsolete and must not be used. A current simulator capture in `build/validation/rejected-simulator-onboarding.png` also cannot be submitted because it contains a simulator-only banner and storage warning; capture from the tested physical iPhone.
+## What’s New in 1.1
 
-Apple's [current screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications), checked October 9, 2026, accept **1206 × 2622** portrait captures from the connected iPhone 16 Pro in the **iPhone with Dynamic Island (medium display)** slot. The page's required-size summary calls for at least one medium-display capture; confirm any additional required slots in the live app version before submission. Upload one to ten PNG or JPEG images per device size, with no alpha channel. Use the current installed Release build and save captures at their native dimensions. The recommended order is onboarding/dashboard, daily blocks, and shared allowance. Xcode's **Window → Devices and Simulators → Gleb’s iPhone → Take Screenshot** can capture these screens after the phone is unlocked.
+• Block whole categories and websites, not just individual apps.
+• New light theme with a pastel sunset, and a matching light Home Screen icon on iOS 18.
+• An animated ocean sunset on the dashboard and onboarding.
+• Refreshed launch screen and clearer rule editors.
+
+## Screenshots
+
+Six slides in `publishing/screenshots/`, alternating light and dark appearance, at 1206 × 2622 (`6.3-inch/`, the iPhone with Dynamic Island medium slot) and 1320 × 2868 (`6.9-inch/`). RGB PNG, no alpha. Upload in file-name order.
+
+| # | Value | Headline | Screen |
+| --- | --- | --- | --- |
+| 1 | Simplicity | Choose the apps. That’s it. | Selection editor, light |
+| 2 | Private, no account | No account. No sign-in. | Dashboard, dark |
+| 3 | Core feature | One allowance, shared. | Allowance editor, light |
+| 4 | Simplicity | Simple by design. | Dashboard, light |
+| 5 | Privacy | Private by default. | Selection editor, dark |
+| 6 | Free | Free. Nothing to unlock. | Allowance editor, dark |
+
+To regenerate: `bash scripts/make-store-captures.sh` renders the real app views on the iPhone 17 Pro simulator into `build/store-captures/`, then `python3 scripts/make-store-screenshots.py` composes the slides. The simulator can’t authorize Screen Time or create activity tokens, so `scripts/store-preview/Fixture.swift` supplies a sample routine and draws Social, Entertainment, and Games tiles where iOS would render the selected items. The status bar is fixed at 09:41.
 
 ## Information to enter in App Store Connect
 

@@ -1,0 +1,27 @@
+# Generated into build/store-preview by scripts/make-store-captures.sh.
+name: StorePreview
+options:
+  deploymentTarget:
+    iOS: "17.4"
+packages:
+  BlockingCore:
+    path: ../..
+targets:
+  StorePreview:
+    type: application
+    platform: iOS
+    sources:
+      - src
+      - path: ../../App/Assets.xcassets
+      - path: ../../App/Resources
+      - path: ../../Shared/Artwork.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.glebmelnikov.daywell.storepreview
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        CODE_SIGNING_ALLOWED: NO
+    dependencies:
+      - package: BlockingCore

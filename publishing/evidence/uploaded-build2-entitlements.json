@@ -1,0 +1,174 @@
+{
+  "audited_on": "2026-10-10",
+  "ipa": "Daywell.ipa (exact package from the successful Xcode Organizer upload)",
+  "size": 6051602,
+  "sha256": "328699cd18c5bad2ce28b119bc52548b6c6cf67291f700f981c4ef8b3b721f42",
+  "md5": "e4f35f9b875e63ef4e0a2dbe7a2671d7",
+  "bundles": [
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock",
+      "relative_path": ".",
+      "version": "1.0",
+      "build": "2",
+      "profile": "iOS Team Store Provisioning Profile: dev.glebmelnikov.InstaBlock",
+      "profile_uuid": "8b8c199d-f208-46a6-bdc3-472ddf35893c",
+      "profile_family_controls": true,
+      "signed_family_controls": true,
+      "team": "VA23K94D58",
+      "signed_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "get_task_allow": false,
+      "has_provisioned_devices": false,
+      "signature_valid": true
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ActivityMonitor",
+      "relative_path": "PlugIns/ActivityMonitor.appex",
+      "version": "1.0",
+      "build": "2",
+      "profile": "iOS Team Store Provisioning Profile: dev.glebmelnikov.InstaBlock.ActivityMonitor",
+      "profile_uuid": "0c160cfe-ed45-428e-8133-52b53d48a186",
+      "profile_family_controls": true,
+      "signed_family_controls": true,
+      "team": "VA23K94D58",
+      "signed_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "get_task_allow": false,
+      "has_provisioned_devices": false,
+      "signature_valid": true
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ShieldAction",
+      "relative_path": "PlugIns/ShieldAction.appex",
+      "version": "1.0",
+      "build": "2",
+      "profile": "iOS Team Store Provisioning Profile: dev.glebmelnikov.InstaBlock.ShieldAction",
+      "profile_uuid": "36e65995-3395-4c48-9d32-48983f0229e8",
+      "profile_family_controls": true,
+      "signed_family_controls": true,
+      "team": "VA23K94D58",
+      "signed_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "get_task_allow": false,
+      "has_provisioned_devices": false,
+      "signature_valid": true
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ShieldConfiguration",
+      "relative_path": "PlugIns/ShieldConfiguration.appex",
+      "version": "1.0",
+      "build": "2",
+      "profile": "iOS Team Store Provisioning Profile: dev.glebmelnikov.InstaBlock.ShieldConfiguration",
+      "profile_uuid": "288a8b49-8ced-4723-aaed-0aef30c50235",
+      "profile_family_controls": true,
+      "signed_family_controls": true,
+      "team": "VA23K94D58",
+      "signed_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "get_task_allow": false,
+      "has_provisioned_devices": false,
+      "signature_valid": true
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ActivityReport",
+      "relative_path": "Extensions/ActivityReport.appex",
+      "version": "1.0",
+      "build": "2",
+      "profile": "iOS Team Store Provisioning Profile: dev.glebmelnikov.InstaBlock.ActivityReport",
+      "profile_uuid": "a5e5a4ac-db7d-4401-9712-4d8c70871ea5",
+      "profile_family_controls": true,
+      "signed_family_controls": true,
+      "team": "VA23K94D58",
+      "signed_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "get_task_allow": false,
+      "has_provisioned_devices": false,
+      "signature_valid": true
+    }
+  ],
+  "deep_signature_valid": true,
+  "upload_log": "Daywell_2026-10-09_10-35-45.814.xcdistributionlogs/ContentDelivery.log",
+  "upload_evidence": {
+    "IDEDistribution.standard.log": [
+      {
+        "line": 184,
+        "text": "2026-10-09 08:38:33 +0000 [MT] Upload succeeded for archive Daywell"
+      }
+    ],
+    "ContentDelivery.log": [
+      {
+        "line": 625,
+        "text": "2026-10-09 10:37:23.772 DEBUG: [ContentDelivery.Uploader] Uploading file: Daywell.ipa"
+      },
+      {
+        "line": 3839,
+        "text": "UPLOAD SUCCEEDED with no errors"
+      }
+    ]
+  },
+  "upload_correlations": [
+    {
+      "line": 176,
+      "text": "      \"cfBundleVersion\" : \"2\","
+    },
+    {
+      "line": 483,
+      "text": "      \"cfBundleVersion\" : \"2\","
+    },
+    {
+      "line": 627,
+      "text": "            Apple ID: 6820666833"
+    },
+    {
+      "line": 719,
+      "text": "      \"cfBundleVersion\" : \"2\","
+    },
+    {
+      "line": 3447,
+      "text": "          \"hash\" : \"E4F35F9B875E63EF4E0A2DBE7A2671D7\","
+    },
+    {
+      "line": 3641,
+      "text": "          \"hash\" : \"E4F35F9B875E63EF4E0A2DBE7A2671D7\","
+    },
+    {
+      "line": 3788,
+      "text": "      \"cfBundleVersion\" : \"2\","
+    }
+  ],
+  "uploaded_checksum_matches": true,
+  "app_store_connect": {
+    "inspected_on": "2026-10-10",
+    "browser": "Dia",
+    "app_id": "6820666833",
+    "version": "1.0",
+    "build": "2",
+    "build_id": "cc965576-6272-4bac-977a-2cca059453b6",
+    "submission_id": "99686a9d-e6a2-4686-98fd-514a9d72a3db",
+    "metadata_url": "https://appstoreconnect.apple.com/teams/412c5bea-4898-45a8-9011-b1242e545b75/apps/6820666833/testflight/ios/cc965576-6272-4bac-977a-2cca059453b6/metadata",
+    "binary_state": "Validated",
+    "store_information_entitlements": {
+      "dev.glebmelnikov.InstaBlock": {
+        "com.apple.developer.family-controls": true
+      },
+      "dev.glebmelnikov.InstaBlock.ActivityMonitor": {
+        "com.apple.developer.family-controls": true
+      },
+      "dev.glebmelnikov.InstaBlock.ShieldAction": {
+        "com.apple.developer.family-controls": true
+      },
+      "dev.glebmelnikov.InstaBlock.ShieldConfiguration": {
+        "com.apple.developer.family-controls": true
+      },
+      "dev.glebmelnikov.InstaBlock.ActivityReport": {
+        "com.apple.developer.family-controls": true
+      }
+    }
+  },
+  "privacy_note": "Local user paths, credentials, certificates, and raw network logs are omitted. Bundle, team, profile, build, and submission identifiers are retained as verification evidence."
+}

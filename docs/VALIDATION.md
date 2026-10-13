@@ -152,3 +152,51 @@ The browser now shows EU DSA compliance Active and the existing non-trader decla
 The user published the Data Not Collected privacy label, resolving the earlier Add for Review validation error. Version 1.0, build 2 was submitted at 11:16 AM by Gleb Melnikov. App Store Connect confirmed “1 Item Submitted” and the review detail shows Waiting for Review. Submission ID: `99686a9d-e6a2-4686-98fd-514a9d72a3db`. Automatic release after approval is selected. Evidence: `build/validation/app-review-submitted.jpg` and `build/validation/app-review-waiting.jpg`. This supersedes earlier processing and not-submitted status entries; the app is not yet publicly released.
 
 Apple’s Included Assets → App Icon preview visibly contains the correct sunset icon from build 2, despite the generic header placeholder. Evidence: `build/validation/app-store-icon-confirmed.jpg`. No icon rebuild or replacement was needed.
+
+
+## Categories and websites — October 13, 2026
+
+The picker now accepts apps, whole categories, and websites, including website-only and category-only selections. Active and upcoming choices display every selected kind. Schedules and the shared allowance carry all three token kinds; each shield layer updates applications, web domains, application categories, and web-domain categories. Websites shielded through a category use the custom shield configuration. This supersedes the earlier app-only selection restriction.
+
+Schema version 3 preserves existing version 1 and 2 app-only documents, pending changes, and exhausted allowance state. Additions apply immediately; removals retain every existing token kind until their deadline, including overnight blocks.
+
+All 53 portable tests passed, including 12 new regressions for mixed selections, category-only and website-only schedules/allowances, exhausted-budget retention, overnight removals, transactional rollback, and persistence migration. The app and all four extensions built successfully for the iOS simulator. Logs: `build/validation/daywell-selection-tests.log` and `build/validation/daywell-selection-build.log`. Actual category/domain shielding, browser support, and reported usage still need physical-device validation on this build.
+
+
+## Sunset in light mode — October 13, 2026
+
+Light mode now uses a separate warm pastel halftone sunset movie and matching static fallback. The original dark movie and PNG are byte-for-byte unchanged (SHA-256 `89f89fedb74abbc8f18fa3ebe75e4a413b52f7906635bef38ece0f58e4379f31` and `c0a612670df0933afe88df02e8faede327203281352693311c12418b36b03c61`). The loading view follows the selected theme, and changing themes swaps the player without restarting the app.
+
+The app and all extensions built successfully for the iPhone 17 Pro simulator. Screenshots confirmed the light layout and moving artwork, and a live switch restored the original dark animation. The light movie is a silent 1200×600 H.264 loop at 15 fps for 29 seconds. Evidence: `build/ui-verification/sunset-light-a.png`, `sunset-light-b.png`, and `sunset-dark-switch.png`; build log: `build/validation/daywell-light-sunset-build.log`.
+
+
+## Matching Home Screen icons — October 13, 2026
+
+The default light app icon now uses the same crop of the pastel sunset as the light animation. The original icon is bundled as the iOS dark appearance and remains byte-for-byte unchanged (SHA-256 `164bca3be2d71ce599b8922773082add64ca14790b74454aa3152cb7213c011f`). Both icon PNGs are opaque RGB at 1024×1024.
+
+The simulator build passed. `assetutil` confirmed an AppIcon default rendition from `DaywellIconLight.png` and a `UIAppearanceDark` rendition from the original `DaywellIcon.png` in the compiled catalog. The installed light icon was visually checked on the Home Screen. Home Screen icon style is an independent iOS setting; Automatic follows system appearance, while choosing Light or Dark overrides it. Earlier iOS versions use the default light icon. Build log: `build/validation/daywell-light-icon-build.log`.
+
+
+## First-launch schedules and usage label — October 13, 2026
+
+Fresh installs now start with no scheduled blocking windows and keep the 30-minute shared allowance. The setup card offers Add daily blocks. Persisted schedules still decode from storage, and reconciliation preserves user-chosen windows. Schedule tests use explicit fixtures rather than depending on onboarding defaults.
+
+The usage report no longer shows an Updated timestamp. Used today and its duration remain, with a waiting message when Screen Time data is unavailable.
+
+All 54 core tests passed, including fresh storage, allowance-only activation (midnight plus two budget monitors), and persistence of subsequently chosen schedules. The app and all extensions built successfully. A clean install in the separate Daywell First Launch iPhone 17 Pro simulator was visually checked: no prefilled schedules, 30-minute allowance, and Add daily blocks. Existing simulator data was retained. Evidence: `build/ui-verification/first-launch-no-schedules.png`; logs: `build/validation/daywell-onboarding-tests.log` and `daywell-onboarding-build.log`.
+
+
+## Scroll title and light artwork contrast — October 13, 2026
+
+The Daywell navigation title hides after scrolling down and reappears at the top. Its toolbar view keeps the same layout while changing visibility, avoiding a header-height shift. Native simulator swipes confirmed the visible, hidden, and restored states in `build/ui-verification/title-scroll-check.png`.
+
+The light sunset uses slightly stronger halftone ink for clearer clouds, sunlight, and water. The light movie, still fallback, and matching light icon were regenerated. The dark movie, still image, and icon retain their previously recorded hashes. The app and all extensions built successfully; the updated app is running in the simulator. Build log: `build/validation/daywell-scroll-contrast-build.log`.
+
+
+## Full-width pastel artwork and adaptive startup — October 13, 2026
+
+The light scene now has deeper ink and a wider range of halftone sizes for stronger cloud, shoreline, and wave definition, while retaining its pastel sky and water. The native launch storyboard and SwiftUI loading view share light/dark artwork and background assets. The build number advances to 4: simulator launch rendering kept stale catalog resources under the previous build number, and a new version resolved the missing image and incorrect dark background without resetting app data.
+
+Artwork on onboarding, the dashboard, loading, and native launch fills the screen width at its original 2:1 proportions. The framed/cropped dashboard image and side margins are removed. Top and bottom fades blend into the surrounding page, while the center stays fully visible. Text and usage colors follow the theme. The launch stills contain matching baked fades; the original dark movie, source still, and icon retain their recorded hashes.
+
+The app and all extensions built successfully (`build/validation/daywell-full-width-build.log`). Actual simulator captures verify native launch and onboarding in both appearances (`build/ui-verification/full-width-launch-{light,dark}.png` and `full-width-onboarding-{light,dark}.png`). The actual dashboard and loading view sources were also rendered in a temporary simulator preview with a fixture model; captures are `full-width-dashboard-{light,dark}-preview.png` and `full-width-loading-{light,dark}-preview.png`. The temporary preview app was removed. Daywell is installed and running in light mode. No blocking logic changed in this visual update; the prior 54 passing core tests remain the latest core test result.

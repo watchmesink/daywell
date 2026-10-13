@@ -2,43 +2,64 @@ import SwiftUI
 import FamilyControls
 import ManagedSettings
 
-// Apple's token label is rendered remotely; reserve row height so it is not
-// collapsed while its private title and icon are loading.
-struct SelectedApplicationRow: View {
-    let token: ApplicationToken
+// Apple's token labels are rendered remotely; reserve room while they load.
+struct SelectionRows: View {
+    let selection: FamilyActivitySelection
 
     var body: some View {
-        Label(token)
-            .labelStyle(.titleAndIcon)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 44)
+        Group {
+            ForEach(Array(selection.applicationTokens), id: \.self) { token in Label(token) }
+            ForEach(Array(selection.categoryTokens), id: \.self) { token in Label(token) }
+            ForEach(Array(selection.webDomainTokens), id: \.self) { token in Label(token) }
+        }
+        .labelStyle(.titleAndIcon)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minHeight: 44)
+    }
+}
+
+extension FamilyActivitySelection {
+    var summary: String {
+        let counts = [(applicationTokens.count, "app", "apps"),
+                      (categoryTokens.count, "category", "categories"),
+                      (webDomainTokens.count, "website", "websites")]
+        let parts = counts.compactMap { count, singular, plural -> String? in
+            count == 0 ? nil : "\(count) \(count == 1 ? singular : plural)"
+        }
+        return parts.isEmpty ? "Nothing selected" : parts.joined(separator: " · ")
     }
 }
 
 enum Brand {
-    static let lime = Color(red: 0.79, green: 0.92, blue: 0.55)
     static let oceanNight = Color(red: 11 / 255, green: 8 / 255, blue: 23 / 255)
     static let ink = Color.primary
     static let background = Color(uiColor: .systemGroupedBackground)
     static let card = Color(uiColor: .secondarySystemGroupedBackground)
 }
 
-struct OceanSunsetBackground: View {
+/// Full scene with no side margins; only its top and bottom dissolve into the page.
+struct OceanSunsetBackdrop: View {
+    var animated = true
+
     var body: some View {
-        GeometryReader { geometry in
-            Image("OceanSunset")
-                .resizable()
-                .scaledToFill()
-                .frame(width: geometry.size.width, height: geometry.size.height)
-                .clipped()
-                .overlay {
-                    LinearGradient(stops: [
-                        .init(color: .black.opacity(0.66), location: 0),
-                        .init(color: .black.opacity(0.52), location: 0.5),
-                        .init(color: .black.opacity(0.86), location: 1)
-                    ], startPoint: .top, endPoint: .bottom)
-                }
+        Group {
+            if animated {
+                OceanSunsetArtwork()
+                    .mask {
+                        LinearGradient(stops: [
+                            .init(color: .clear, location: 0),
+                            .init(color: .white, location: 0.16),
+                            .init(color: .white, location: 0.74),
+                            .init(color: .clear, location: 1)
+                        ], startPoint: .top, endPoint: .bottom)
+                    }
+            } else {
+                // The launch stills already contain the same top/bottom fade.
+                Image("LaunchArtwork").resizable().scaledToFit()
+            }
         }
+        .aspectRatio(2, contentMode: .fit)
+        .frame(maxWidth: .infinity)
         .accessibilityHidden(true)
     }
 }
@@ -46,20 +67,19 @@ struct OceanSunsetBackground: View {
 struct DaywellLoadingView: View {
     var body: some View {
         ZStack {
-            Brand.oceanNight.ignoresSafeArea()
-            VStack(spacing: 24) {
-                Image("OceanSunset")
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .accessibilityHidden(true)
-                Text("Daywell").font(.system(size: 28, weight: .semibold))
-                ProgressView().tint(.white).accessibilityLabel("Loading your routine")
+            Color("LaunchBackground").ignoresSafeArea()
+            VStack(spacing: 0) {
+                OceanSunsetBackdrop(animated: false)
+                VStack(spacing: 24) {
+                    Text("Daywell").font(.system(size: 28, weight: .semibold))
+                    ProgressView().tint(Color(uiColor: .label)).accessibilityLabel("Loading your routine")
+                }
+                .padding(.top, -24)
             }
-            .foregroundStyle(.white)
-            .frame(maxWidth: 640)
-            .padding(.horizontal, 16)
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity)
         }
+        .ignoresSafeArea(.container, edges: .horizontal)
     }
 }
 
@@ -78,8 +98,8 @@ struct PrimaryButton: ButtonStyle {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .semibold))
             .frame(maxWidth: .infinity).padding(.vertical, 17)
-            .foregroundStyle(.black)
-            .background(Brand.lime.opacity(enabled ? (configuration.isPressed ? 0.7 : 1) : 0.4),
+            .foregroundStyle(.white)
+            .background(Color(uiColor: .systemBlue).opacity(enabled ? (configuration.isPressed ? 0.7 : 1) : 0.4),
                         in: RoundedRectangle(cornerRadius: 18))
             .opacity(enabled ? 1 : 0.6)
     }

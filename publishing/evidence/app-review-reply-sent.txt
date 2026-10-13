@@ -1,0 +1,26 @@
+Verified in Dia on 2026-10-10. The user confirmed sending the reply.
+App Store Connect shows Messages (2), author Gleb Melnikov, Today 9:50 AM.
+Submission: 99686a9d-e6a2-4686-98fd-514a9d72a3db
+URL: https://appstoreconnect.apple.com/apps/6820666833/distribution/reviewsubmissions/details/99686a9d-e6a2-4686-98fd-514a9d72a3db
+No metadata file attachment is shown; Apple returned a generic upload error.
+
+Hello App Review,
+
+Please manually recheck the Guideline 2.5.1 finding for Daywell 1.0 (2), app ID 6820666833, team VA23K94D58, submission 99686a9d-e6a2-4686-98fd-514a9d72a3db.
+
+App Store Connect's processed Build Metadata > Store Information > Entitlements lists com.apple.developer.family-controls: true for the main app and all four extensions. Binary State is Validated:
+https://appstoreconnect.apple.com/teams/412c5bea-4898-45a8-9011-b1242e545b75/apps/6820666833/testflight/ios/cc965576-6272-4bac-977a-2cca059453b6/metadata
+
+The affected bundle IDs are:
+
+- dev.glebmelnikov.InstaBlock
+- dev.glebmelnikov.InstaBlock.ActivityMonitor
+- dev.glebmelnikov.InstaBlock.ShieldConfiguration
+- dev.glebmelnikov.InstaBlock.ShieldAction
+- dev.glebmelnikov.InstaBlock.ActivityReport
+
+We also verified the exact uploaded IPA against the successful upload log's checksum. All five bundles contain the Family Controls entitlement in their signed entitlements and App Store provisioning profiles, and their signatures pass verification.
+
+Could you recheck the automated finding and continue review? If a requirement remains unmet, please identify the specific bundle or executable and the missing entitlement or approval so we can address it precisely.
+
+Thank you.

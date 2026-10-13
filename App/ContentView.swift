@@ -6,32 +6,46 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel
     @State private var sheet: EditorSheet?
+    @State private var isScrolledDown = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     #if targetEnvironment(simulator)
-                    Label("Simulator preview · Blocking requires an iPhone.", systemImage: "iphone")
-                        .font(.caption).foregroundStyle(.secondary)
+                    inset {
+                        Label("Simulator preview · Blocking requires an iPhone.", systemImage: "iphone")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     #endif
-                    if let error = model.error { ErrorMessage(message: error) }
-                    if let failure = model.document.lastError, failure != model.error { ErrorMessage(message: failure) }
-                    if model.hasApplications {
+                    if let error = model.error { inset { ErrorMessage(message: error) } }
+                    if let failure = model.document.lastError, failure != model.error { inset { ErrorMessage(message: failure) } }
+                    if model.hasSelection {
                         dashboard
                     } else {
                         onboarding
                     }
-                    if model.snapshot.hasPendingChanges { pendingCard }
-                    footer
+                    if model.snapshot.hasPendingChanges { inset { pendingCard } }
+                    inset { footer }
                 }
-                .frame(maxWidth: 640)
-                .padding(.horizontal, 22).padding(.vertical, 24)
+                .padding(.vertical, 24)
                 .frame(maxWidth: .infinity)
+                .onGeometryChange(for: Bool.self) { geometry in
+                    geometry.frame(in: .named("main-scroll")).minY < -8
+                } action: { isScrolledDown = $0 }
             }
+            .coordinateSpace(name: "main-scroll")
+            .ignoresSafeArea(.container, edges: .horizontal)
             .background(Brand.background)
             .navigationTitle("Daywell")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Daywell").font(.headline)
+                        .opacity(isScrolledDown ? 0 : 1)
+                        .accessibilityHidden(isScrolledDown)
+                }
+            }
             .refreshable { await model.refresh() }
             .sheet(item: $sheet) { editor in
                 switch editor {
@@ -43,30 +57,45 @@ struct ContentView: View {
         }
     }
 
+    private func inset<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .frame(maxWidth: 640, alignment: .leading)
+            .padding(.horizontal, 22)
+            .frame(maxWidth: .infinity)
+    }
+
     private var onboarding: some View {
         VStack(alignment: .leading, spacing: 26) {
-            Image("DaywellIcon").resizable().scaledToFit()
-                .frame(width: 76, height: 76).clipShape(RoundedRectangle(cornerRadius: 18))
-            Text("A little more room\nin your day.")
-                .font(.system(size: 38, weight: .semibold, design: .rounded)).tracking(-1.4)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("Set your boundaries once. Daywell keeps them in place, with no skip button when a block is active.")
-                .foregroundStyle(.secondary).font(.body).lineSpacing(4)
-            rulesCard()
-            VStack(alignment: .leading, spacing: 12) {
-                Button {
-                    if model.authorized { sheet = .application }
-                    else { Task { await model.authorize() } }
-                } label: {
-                    HStack {
-                        if model.working { ProgressView().tint(.black) }
-                        Text(model.authorized ? "Choose apps & start" : "Enable Screen Time access")
-                        Image(systemName: "arrow.right")
-                    }
+            VStack(alignment: .leading, spacing: 0) {
+                OceanSunsetBackdrop()
+                inset {
+                    Text("A little more room\nin your day.")
+                        .font(.system(size: 38, weight: .semibold, design: .rounded)).tracking(-1.4)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .buttonStyle(PrimaryButton()).disabled(model.working)
-                Text("Choose the apps you want to block. Your rules apply to all selected apps, and your choices and usage stay on your device.")
-                    .font(.caption).foregroundStyle(.secondary).lineSpacing(3)
+                .padding(.top, -24)
+            }
+            inset {
+                VStack(alignment: .leading, spacing: 26) {
+                    Text("Set your boundaries once. Daywell keeps them in place, with no skip button when a block is active.")
+                        .foregroundStyle(.secondary).font(.body).lineSpacing(4)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Button {
+                            if model.authorized { sheet = .application }
+                            else { Task { await model.authorize() } }
+                        } label: {
+                            HStack {
+                                if model.working { ProgressView().tint(.white) }
+                                Text(model.authorized ? "Choose what to block" : "Enable Screen Time access")
+                                Image(systemName: "arrow.right")
+                            }
+                        }
+                        .buttonStyle(PrimaryButton()).disabled(model.working)
+                        Text("Choose apps, categories, and websites to block. Your rules apply to everything selected, and your choices and usage stay on your device.")
+                            .font(.caption).foregroundStyle(.secondary).lineSpacing(3)
+                    }
+                    rulesCard()
+                }
             }
         }
     }
@@ -74,14 +103,16 @@ struct ContentView: View {
     private var dashboard: some View {
         VStack(alignment: .leading, spacing: 22) {
             if !model.authorized {
-                Card {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Protection needs access", systemImage: "exclamationmark.shield")
-                            .font(.headline)
-                        Text("Screen Time access is off. Your saved rules remain, but iOS cannot enforce them until you enable access again.")
-                            .font(.subheadline).foregroundStyle(.secondary)
-                        Button("Enable access") { Task { await model.authorize() } }
-                            .buttonStyle(PrimaryButton()).disabled(model.working)
+                inset {
+                    Card {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("Protection needs access", systemImage: "exclamationmark.shield")
+                                .font(.headline)
+                            Text("Screen Time access is off. Your saved rules remain, but iOS cannot enforce them until you enable access again.")
+                                .font(.subheadline).foregroundStyle(.secondary)
+                            Button("Enable access") { Task { await model.authorize() } }
+                                .buttonStyle(PrimaryButton()).disabled(model.working)
+                        }
                     }
                 }
             }
@@ -89,46 +120,52 @@ struct ContentView: View {
                 let decision = model.snapshot.decision(at: context.date, calendar: .autoupdatingCurrent)
                 VStack(alignment: .leading, spacing: 22) {
                     statusCard(decision)
-                    appCard()
-                    rulesCard()
+                    inset { appCard() }
+                    inset { rulesCard() }
                 }
             }
         }
     }
 
     private func statusCard(_ decision: ShieldDecision) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Label(model.authorized ? (decision.isBlocked ? "BLOCK ACTIVE" : model.hasRules ? "TIME AVAILABLE" : "NO RULES SET") : "ACCESS NEEDED",
-                      systemImage: model.authorized ? (decision.isBlocked ? "lock.fill" : "checkmark.circle.fill") : "exclamationmark.circle")
-                    .font(.system(.caption, design: .rounded, weight: .bold)).tracking(1)
-                Spacer()
-                Image(systemName: "sun.horizon").font(.title2)
+        VStack(alignment: .leading, spacing: 0) {
+            OceanSunsetBackdrop()
+            inset {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack {
+                        Label(model.authorized ? (decision.isBlocked ? "BLOCK ACTIVE" : model.hasRules ? "TIME AVAILABLE" : "NO RULES SET") : "ACCESS NEEDED",
+                              systemImage: model.authorized ? (decision.isBlocked ? "lock.fill" : "checkmark.circle.fill") : "exclamationmark.circle")
+                            .font(.system(.caption, design: .rounded, weight: .bold)).tracking(1)
+                        Spacer()
+                        Image(systemName: "sun.horizon").font(.title2)
+                    }
+                    Text(!model.authorized ? "Reconnect\nto your routine." : decision.isBlocked ? "A moment\naway from the screen." : model.hasRules ? "Enjoy your time.\nKeep your limits." : "Make room\nfor your day.")
+                        .font(.system(size: 34, weight: .semibold, design: .rounded)).tracking(-1)
+                    if decision.budgetExhausted {
+                        Text(ProtectionCopy.allowanceUsed).font(.subheadline)
+                    } else if let next = decision.nextScheduleTransition {
+                        Text(decision.scheduled ? "Scheduled block ends at \(next, style: .time)." : "Next scheduled block at \(next, style: .time).")
+                            .font(.subheadline)
+                    } else {
+                        Text(decision.scheduled ? "Your overlapping schedules cover the whole day." : model.hasRules ? "Your daily allowance keeps you on track." : "Add a rule below to start protecting your time.")
+                            .font(.subheadline)
+                    }
+                    if model.authorized, model.snapshot.policy.dailyLimitMinutes != nil, !decision.budgetExhausted,
+                       let selection = model.selection, !selection.isEmpty {
+                        Divider().overlay(Color.primary.opacity(0.25))
+                        DeviceActivityReport(.daywellToday, filter: DeviceActivityFilter(
+                            segment: .daily(during: Calendar.current.dateInterval(of: .day, for: .now)!),
+                            applications: selection.applicationTokens, categories: selection.categoryTokens,
+                            webDomains: selection.webDomainTokens))
+                            .frame(height: 88)
+                            .id(model.snapshot.generation)
+                    }
+                }
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Text(!model.authorized ? "Reconnect\nto your routine." : decision.isBlocked ? "A moment\naway from the screen." : model.hasRules ? "Enjoy your time.\nKeep your limits." : "Make room\nfor your day.")
-                .font(.system(size: 34, weight: .semibold, design: .rounded)).tracking(-1)
-            if decision.budgetExhausted {
-                Text(ProtectionCopy.allowanceUsed).font(.subheadline)
-            } else if let next = decision.nextScheduleTransition {
-                Text(decision.scheduled ? "Scheduled block ends at \(next, style: .time)." : "Next scheduled block at \(next, style: .time).")
-                    .font(.subheadline)
-            } else {
-                Text(decision.scheduled ? "Your overlapping schedules cover the whole day." : model.hasRules ? "Your daily allowance keeps you on track." : "Add a rule below to start protecting your time.")
-                    .font(.subheadline)
-            }
-            if model.authorized, model.snapshot.policy.dailyLimitMinutes != nil, !decision.budgetExhausted,
-               let tokens = model.tokens, !tokens.isEmpty {
-                Divider().overlay(.white.opacity(0.25))
-                DeviceActivityReport(.daywellToday, filter: DeviceActivityFilter(
-                    segment: .daily(during: Calendar.current.dateInterval(of: .day, for: .now)!),
-                    applications: Set(tokens)))
-                    .frame(height: 88)
-                    .id(model.snapshot.generation)
-            }
+            .padding(.top, -24)
         }
-        .foregroundStyle(.white).padding(24).frame(maxWidth: .infinity, alignment: .leading)
-        .background { OceanSunsetBackground() }
-        .clipShape(RoundedRectangle(cornerRadius: 28))
         .accessibilityIdentifier("protection-status")
     }
 
@@ -136,24 +173,27 @@ struct ContentView: View {
         Card(padding: 16) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    SectionHeading(title: "Blocked apps")
+                    SectionHeading(title: "Blocked activity")
                     Spacer()
                     Button("Change") { sheet = .application }.font(.subheadline)
                         .disabled(!model.authorized || model.working)
                 }
-                if let tokens = model.tokens {
+                if let selection = model.selection {
+                    Text(selection.summary).font(.caption).foregroundStyle(.secondary)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(tokens, id: \.self) { token in
-                                Label(token)
-                                    .labelStyle(.iconOnly)
-                                    .frame(width: 36, height: 36)
+                            Group {
+                                ForEach(Array(selection.applicationTokens), id: \.self) { token in Label(token) }
+                                ForEach(Array(selection.categoryTokens), id: \.self) { token in Label(token) }
+                                ForEach(Array(selection.webDomainTokens), id: \.self) { token in Label(token) }
                             }
+                            .labelStyle(.iconOnly)
+                            .frame(width: 36, height: 36)
                         }
                     }
                     .frame(height: 36)
                 } else {
-                    Label("Selected apps unavailable", systemImage: "exclamationmark.triangle")
+                    Label("Selected activity unavailable", systemImage: "exclamationmark.triangle")
                 }
             }
         }
@@ -187,9 +227,9 @@ struct ContentView: View {
                             .font(.system(size: 36, weight: .semibold, design: .rounded)).monospacedDigit()
                         Text("min / day").foregroundStyle(.secondary)
                     }
-                    Text(model.hasApplications
-                         ? "Time in all selected apps adds up. Increases or removal take effect tomorrow."
-                         : "Time in all selected apps adds up. You can change or remove this rule before activation.")
+                    Text(model.hasSelection
+                         ? "Time in selected apps, categories, and websites adds up. Increases or removal take effect tomorrow."
+                         : "Time in selected apps, categories, and websites adds up. You can change or remove this rule before activation.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 if windows.isEmpty && allowance == nil {
@@ -212,7 +252,7 @@ struct ContentView: View {
                     }.font(.subheadline)
                 }
             }
-            .disabled((model.hasApplications && !model.authorized) || model.working)
+            .disabled((model.hasSelection && !model.authorized) || model.working)
         }
     }
 
@@ -241,16 +281,17 @@ struct ContentView: View {
                     Text("From \(pending.effectiveAfter, format: .dateTime.weekday().hour().minute())")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                if let pending = model.snapshot.pendingApplications {
-                    Label("Upcoming selection · \(pending.applications.count) apps", systemImage: "app.badge")
-                    if pending.applications.isEmpty {
-                        Text("All apps will be removed from protection.")
-                    } else if let tokens = ProtectionEnvironment.applications(from: pending.applications) {
-                        ForEach(tokens, id: \.self) { token in SelectedApplicationRow(token: token) }
+                if let pending = model.snapshot.pendingSelection {
+                    Label("Upcoming selection", systemImage: "app.badge")
+                    if pending.selection.isEmpty {
+                        Text("Everything will be removed from protection.")
+                    } else if let selection = ProtectionEnvironment.selection(from: pending.selection) {
+                        Text(selection.summary).font(.caption).foregroundStyle(.secondary)
+                        SelectionRows(selection: selection)
                     } else {
-                        Text("Upcoming apps could not be read.")
+                        Text("Upcoming selection could not be read.")
                     }
-                    Text("From \(pending.effectiveAfter, format: .dateTime.weekday().hour().minute()). New apps are already protected; removed apps remain protected until then.")
+                    Text("From \(pending.effectiveAfter, format: .dateTime.weekday().hour().minute()). Additions are already protected; removals remain protected until then.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Button("Cancel pending changes") { Task { _ = await model.save(.cancelPending) } }

@@ -5,57 +5,48 @@ import SwiftUI
 struct ApplicationEditor: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
-    @State private var selection = FamilyActivitySelection(includeEntireCategory: false)
+    @State private var selection = FamilyActivitySelection(includeEntireCategory: true)
     @State private var pickerPresented = false
     @State private var validationError: String?
     @State private var loadedSelection = false
 
-    private var unsupportedSelection: Bool {
-        !selection.categoryTokens.isEmpty || !selection.webDomainTokens.isEmpty
-    }
-
-    private var removesActiveApps: Bool {
-        guard let active = model.tokens else { return true }
-        return !selection.applicationTokens.isSuperset(of: Set(active))
+    private var removesActiveSelection: Bool {
+        guard let active = model.selection else { return true }
+        return !selection.isSuperset(of: active)
     }
 
     private var saveTitle: String {
-        !model.hasApplications ? "Activate protection" : "Save changes"
+        !model.hasSelection ? "Activate protection" : "Save changes"
     }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    Text(model.hasApplications ? "Change the apps in your routine" : "Choose apps to begin")
+                    Text(model.hasSelection ? "Change what you block" : "Choose what to block")
                         .font(.title2.bold())
-                    Text(model.hasApplications
-                         ? "Added apps are protected immediately, even during a block. Removed apps stay protected until tomorrow, after any active overnight block ends."
-                         : "Choose one or more apps. Your configured rules will apply as soon as you save.")
+                    Text(model.hasSelection
+                         ? "Additions are protected immediately, even during a block. Removals stay protected until tomorrow, after any active overnight block ends."
+                         : "Choose apps, whole categories, or websites. Your configured rules will apply as soon as you save.")
                         .foregroundStyle(.secondary)
                     Button { pickerPresented = true } label: {
-                        Label("Choose apps", systemImage: "app.badge.checkmark")
+                        Label("Choose apps & websites", systemImage: "app.badge.checkmark")
                     }
-                    Text("Expand a category and select individual apps. Then save your selection here to apply it.")
+                    Text("Select a whole category or expand it to choose individual apps and websites. Then save your selection here to apply it.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section {
-                    if !selection.applicationTokens.isEmpty {
-                        ForEach(Array(selection.applicationTokens), id: \.self) { token in
-                            SelectedApplicationRow(token: token)
-                        }
+                    if selection.isEmpty {
+                        Text("Nothing selected").foregroundStyle(.secondary)
                     } else {
-                        Text("No individual apps selected").foregroundStyle(.secondary)
-                    }
-                    if unsupportedSelection {
-                        ErrorMessage(message: "Categories and websites are not supported. Open Choose apps, clear those selections, and select individual apps inside each category.")
+                        SelectionRows(selection: selection)
                     }
                 } header: {
-                    Text("Selection · \(selection.applicationTokens.count) apps")
+                    Text(selection.summary)
                 } footer: {
-                    Text(removesActiveApps
-                         ? "Any new apps apply now. Removed apps stay protected until the upcoming change takes effect."
-                         : "Your rules apply to all selected apps. Adding apps does not reset used time.")
+                    Text(removesActiveSelection
+                         ? "Additions apply now. Removed apps, categories, and websites stay protected until the upcoming change takes effect."
+                         : "Your rules apply to everything selected. Additions do not reset used time.")
                 }
                 Section("Your rules") {
                     ForEach(model.snapshot.policy.windows) { window in
@@ -65,7 +56,7 @@ struct ApplicationEditor: View {
                         LabeledContent("Shared daily allowance", value: "\(minutes) minutes")
                     }
                     if !model.hasRules {
-                        Text("No rules configured yet. Add a rule from the dashboard to block these apps.")
+                        Text("No rules configured yet. Add a rule from the dashboard to protect this selection.")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -73,22 +64,22 @@ struct ApplicationEditor: View {
                 Section {
                     Button(saveTitle) {
                         Task { await saveSelection() }
-                    }.disabled(model.working || selection.applicationTokens.isEmpty || unsupportedSelection)
-                    if model.hasApplications {
-                        Button("Remove all apps tomorrow", role: .destructive) {
-                            Task { if await model.save(.applications([])) { dismiss() } }
+                    }.disabled(model.working || selection.isEmpty)
+                    if model.hasSelection {
+                        Button("Remove everything tomorrow", role: .destructive) {
+                            Task { if await model.save(.selection(BlockingSelection())) { dismiss() } }
                         }.disabled(model.working)
                     }
                 } footer: {
                     Text("You can edit at any time. Additions apply now; removals appear under Upcoming changes.")
                 }
             }
-            .navigationTitle("Selected apps").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Your selection").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { Task { await saveSelection() } }
-                        .disabled(model.working || selection.applicationTokens.isEmpty || unsupportedSelection)
+                        .disabled(model.working || selection.isEmpty)
                 }
             }
             .familyActivityPicker(isPresented: $pickerPresented, selection: $selection)
@@ -97,8 +88,8 @@ struct ApplicationEditor: View {
                 guard !loadedSelection else { return }
                 loadedSelection = true
                 model.error = nil
-                if let tokens = model.editableTokens { selection.applicationTokens = Set(tokens) }
-                else { validationError = "Saved apps could not be read. Choose the apps again before saving." }
+                if let saved = model.editableSelection { selection = saved }
+                else { validationError = "Saved selections could not be read. Choose your apps, categories, and websites again before saving." }
             }
             .onChange(of: selection) { _, _ in validationError = nil }
         }
@@ -106,15 +97,13 @@ struct ApplicationEditor: View {
 
     private func saveSelection() async {
         validationError = nil
-        guard !selection.applicationTokens.isEmpty, selection.categoryTokens.isEmpty, selection.webDomainTokens.isEmpty else {
-            validationError = "Select at least one app. Leave categories and websites unselected."
+        guard !selection.isEmpty else {
+            validationError = "Select at least one app, category, or website."
             return
         }
         do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys]
-            let data = try selection.applicationTokens.map { try encoder.encode($0) }
-            if await model.save(.applications(data)) { dismiss() }
+            let encoded = try ProtectionEnvironment.encodedSelection(selection)
+            if await model.save(.selection(encoded)) { dismiss() }
         } catch { validationError = error.localizedDescription }
     }
 }
@@ -126,7 +115,7 @@ struct ScheduleEditor: View {
     @State private var loaded = false
 
     private var appliesImmediately: Bool {
-        !model.hasApplications || BlockingPolicy(windows: windows).coversSchedule(model.snapshot.policy.windows)
+        !model.hasSelection || BlockingPolicy(windows: windows).coversSchedule(model.snapshot.policy.windows)
     }
 
     var body: some View {
@@ -207,11 +196,11 @@ struct LimitEditor: View {
                             .accessibilityLabel("Minutes per day")
                     }
                 } footer: {
-                    Text("Time in all selected apps adds up. Once the total reaches this limit, every selected app is blocked until the daily reset.")
+                    Text("Time in your selected apps, categories, and websites adds up. Once the total reaches this limit, everything selected is blocked until the daily reset.")
                 }
                 Section {
                     Label("A smaller allowance applies immediately.", systemImage: "arrow.down.circle")
-                    Label("Increasing or removing the allowance applies tomorrow once apps are protected.", systemImage: "clock")
+                    Label("Increasing or removing the allowance applies tomorrow once protection is active.", systemImage: "clock")
                     Label("Any scheduled blocks still apply.", systemImage: "lock")
                 }.font(.subheadline)
                 if let pending = model.snapshot.pendingLimit, pending.minutes == nil {
@@ -221,7 +210,7 @@ struct LimitEditor: View {
                     }
                 } else if model.snapshot.policy.dailyLimitMinutes != nil {
                     Section {
-                        Button(model.hasApplications ? "Remove allowance tomorrow" : "Remove allowance", role: .destructive) {
+                        Button(model.hasSelection ? "Remove allowance tomorrow" : "Remove allowance", role: .destructive) {
                             Task { if await model.save(.limit(nil)) { dismiss() } }
                         }.disabled(model.working)
                     } footer: {
