@@ -36,7 +36,8 @@ final class CoordinatorTests: XCTestCase {
         driver = FakeDriver()
         clock = TestClock()
         coordinator = ProtectionCoordinator(repository: repository, driver: driver, clock: { self.clock.now }, calendar: { calendar() })
-        try coordinator.execute(.applications([selectedApp]))
+        try coordinator.execute(.windows(sampleWindows))
+        try coordinator.execute(.selection(.init(applications: [selectedApp])))
     }
 
     override func tearDownWithError() throws { try FileManager.default.removeItem(at: directory) }
@@ -158,15 +159,15 @@ final class CoordinatorTests: XCTestCase {
     }
 
     func testAddingAppsReplacesBudgetMonitorsImmediately() throws {
-        try coordinator.execute(.applications([selectedApp, anotherApp]))
-        XCTAssertEqual(Set(driver.lastDecision!.applications), Set([selectedApp, anotherApp]))
+        try coordinator.execute(.selection(.init(applications: [selectedApp, anotherApp])))
+        XCTAssertEqual(Set(driver.lastDecision!.selection.applications), Set([selectedApp, anotherApp]))
         let budgets = driver.monitors.values.compactMap { spec -> [Data]? in
-            if case .budget(_, let applications, _) = spec.kind { return applications }
+            if case .budget(_, let selection, _) = spec.kind { return selection.applications }
             return nil
         }
         XCTAssertEqual(budgets.count, 2)
         XCTAssertTrue(budgets.allSatisfy { Set($0) == Set([selectedApp, anotherApp]) })
-        XCTAssertNil(try repository.read().active.pendingApplications)
+        XCTAssertNil(try repository.read().active.pendingSelection)
     }
 
     func testStagedGenerationLeftByCrashIsRemovedOnRecovery() throws {
@@ -194,7 +195,7 @@ final class CoordinatorTests: XCTestCase {
 
     func testLegacySingleAppStateMigratesWithoutLosingPendingSelection() throws {
         var document = try repository.read()
-        document.active.pendingApplications = PendingApplications(applications: [anotherApp],
+        document.active.pendingSelection = PendingSelection(selection: .init(applications: [anotherApp]),
             effectiveAfter: date("2026-10-09 00:00:00"))
         var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(document)) as? [String: Any])
         var active = try XCTUnwrap(json["active"] as? [String: Any])
@@ -202,21 +203,21 @@ final class CoordinatorTests: XCTestCase {
         policy["application"] = try XCTUnwrap((policy["applications"] as? [String])?.first)
         policy.removeValue(forKey: "applications")
         active["policy"] = policy
-        var pending = try XCTUnwrap(active["pendingApplications"] as? [String: Any])
+        var pending = try XCTUnwrap(active["pendingSelection"] as? [String: Any])
         pending["application"] = try XCTUnwrap((pending["applications"] as? [String])?.first)
         pending.removeValue(forKey: "applications")
         active["pendingApplication"] = pending
-        active.removeValue(forKey: "pendingApplications")
+        active.removeValue(forKey: "pendingSelection")
         json["active"] = active
         json["schemaVersion"] = 1
         try JSONSerialization.data(withJSONObject: json).write(to: directory.appendingPathComponent("protection-v1.json"))
 
         let restored = try repository.read()
-        XCTAssertEqual(restored.active.policy.applications, [selectedApp])
-        XCTAssertEqual(restored.active.pendingApplications?.applications, [anotherApp])
+        XCTAssertEqual(restored.active.policy.selection.applications, [selectedApp])
+        XCTAssertEqual(restored.active.pendingSelection?.selection.applications, [anotherApp])
         try repository.update { _ in }
-        XCTAssertEqual(try repository.read().schemaVersion, 2)
-        XCTAssertEqual(try repository.read().active.pendingApplications?.applications, [anotherApp])
+        XCTAssertEqual(try repository.read().schemaVersion, 3)
+        XCTAssertEqual(try repository.read().active.pendingSelection?.selection.applications, [anotherApp])
     }
 
     func testCorruptDataNeverBecomesAnEmptyConfiguration() throws {
@@ -230,7 +231,7 @@ final class CoordinatorTests: XCTestCase {
     func testFailedTransactionDoesNotPersistPartialChanges() throws {
         let before = try repository.read()
         XCTAssertThrowsError(try repository.update { document in
-            document.active.policy.applications = []
+            document.active.policy.selection.applications = []
             throw CocoaError(.fileWriteUnknown)
         })
         XCTAssertEqual(try repository.read(), before)
@@ -251,4 +252,105 @@ final class CoordinatorTests: XCTestCase {
         XCTAssertEqual(failures, 0)
         XCTAssertEqual(try repository.read().lastCallbackAt, Date(timeIntervalSince1970: 40))
     }
+
+    func testMixedSelectionPersistsActiveStagedAndPendingTargets() throws {
+        let selection = BlockingSelection(applications: [selectedApp], categories: [selectedCategory], webDomains: [selectedWebsite])
+        try coordinator.execute(.selection(selection))
+        try coordinator.execute(.selection(.init(webDomains: [selectedWebsite])))
+        var saved = try repository.read()
+        saved.staged = saved.active
+        saved.staged?.generation = UUID()
+        try repository.update { $0 = saved }
+        let reopened = try StateRepository(directory: directory).read()
+        XCTAssertEqual(reopened, saved)
+        XCTAssertEqual(reopened.active.policy.selection, selection)
+        XCTAssertEqual(reopened.active.pendingSelection?.selection, BlockingSelection(webDomains: [selectedWebsite]))
+        XCTAssertEqual(reopened.staged?.policy.selection, selection)
+        XCTAssertEqual(reopened.schemaVersion, 3)
+    }
+
+    func testFailedWebsiteAdditionRetainsOriginalCategoryShieldsAndBudget() throws {
+        try repository.update { $0.active.policy.selection = BlockingSelection(categories: [selectedCategory]) }
+        try coordinator.reconcile()
+        try exhaustCurrentAllowance()
+        let before = try repository.read().active
+        let names = driver.registeredNames
+        driver.failAtInstall = driver.installedCount + 2
+        XCTAssertThrowsError(try coordinator.execute(.selection(.init(categories: [selectedCategory], webDomains: [selectedWebsite]))))
+        XCTAssertEqual(try repository.read().active, before)
+        XCTAssertEqual(driver.registeredNames, names)
+        XCTAssertNil(try repository.read().staged)
+        XCTAssertEqual(driver.lastDecision?.selection, before.policy.selection)
+        XCTAssertTrue(driver.lastDecision!.budgetExhausted)
+    }
+
+    func testOldCategoryThresholdDuringWebsiteAdditionSurvivesCommit() throws {
+        try repository.update { $0.active.policy.selection = BlockingSelection(categories: [selectedCategory]) }
+        try coordinator.reconcile()
+        let old = try repository.read().active
+        let activity = MonitorSpec.budgetName(generation: old.generation, cycle: old.cycles[0].id)
+        driver.onInstall = { [unowned self] _ in
+            try self.coordinator.handleCallback(activity: activity, event: MonitorSpec.limitEvent)
+        }
+        let larger = BlockingSelection(categories: [selectedCategory], webDomains: [selectedWebsite])
+        try coordinator.execute(.selection(larger))
+        XCTAssertEqual(driver.lastDecision?.selection, larger)
+        XCTAssertTrue(driver.lastDecision!.budgetExhausted)
+        let budgets = driver.monitors.values.compactMap { spec -> BlockingSelection? in
+            if case .budget(_, let selection, _) = spec.kind { return selection }
+            return nil
+        }
+        XCTAssertEqual(budgets, [larger, larger])
+    }
+
+    func testVersionTwoMigrationPreservesAppsExhaustionAndPendingRemoval() throws {
+        try exhaustCurrentAllowance()
+        try coordinator.execute(.selection(.init(applications: [anotherApp])))
+        let before = try repository.read()
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(before)) as? [String: Any])
+        var active = try XCTUnwrap(json["active"] as? [String: Any])
+        var policy = try XCTUnwrap(active["policy"] as? [String: Any])
+        policy.removeValue(forKey: "categories")
+        policy.removeValue(forKey: "webDomains")
+        active["policy"] = policy
+        var pending = try XCTUnwrap(active.removeValue(forKey: "pendingSelection") as? [String: Any])
+        pending.removeValue(forKey: "categories")
+        pending.removeValue(forKey: "webDomains")
+        active["pendingApplications"] = pending
+        json["active"] = active
+        json["schemaVersion"] = 2
+        try JSONSerialization.data(withJSONObject: json).write(to: directory.appendingPathComponent("protection-v1.json"))
+        let restored = try repository.read()
+        XCTAssertEqual(restored.active, before.active)
+        try coordinator.reconcile()
+        XCTAssertEqual(try repository.read().schemaVersion, 3)
+        XCTAssertEqual(try repository.read().active, before.active)
+        XCTAssertTrue(driver.lastDecision!.budgetExhausted)
+    }
+
+
+    func testFreshInstallStartsWithAllowanceOnlyAndKeepsUserChosenSchedules() throws {
+        let freshDirectory = directory.appendingPathComponent("fresh-install")
+        let freshRepository = try StateRepository(directory: freshDirectory)
+        let freshDriver = FakeDriver()
+        let freshCoordinator = ProtectionCoordinator(repository: freshRepository, driver: freshDriver,
+            clock: { self.clock.now }, calendar: { calendar() })
+        XCTAssertTrue(try freshRepository.read().active.policy.windows.isEmpty)
+        XCTAssertEqual(try freshRepository.read().active.policy.dailyLimitMinutes, 30)
+        try freshCoordinator.execute(.selection(.init(applications: [selectedApp])))
+        try freshCoordinator.reconcile()
+        let activated = try freshRepository.read().active
+        XCTAssertTrue(activated.policy.windows.isEmpty)
+        XCTAssertFalse(activated.decision(at: date("2026-10-08 07:00:00"), calendar: calendar()).scheduled)
+        XCTAssertNil(activated.policy.nextScheduleTransition(after: clock.now, calendar: calendar()))
+        XCTAssertEqual(freshDriver.registeredNames.count, 3, "Only midnight and two shared-budget monitors")
+
+        let chosen = BlockWindow(startMinute: 8 * 60, endMinute: 9 * 60)
+        try freshCoordinator.execute(.windows([chosen]))
+        let reopened = try StateRepository(directory: freshDirectory)
+        try ProtectionCoordinator(repository: reopened, driver: freshDriver,
+            clock: { self.clock.now }, calendar: { calendar() }).reconcile()
+        XCTAssertEqual(try reopened.read().active.policy.windows, [chosen])
+    }
+
 }

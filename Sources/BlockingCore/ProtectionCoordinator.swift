@@ -86,7 +86,7 @@ public final class ProtectionCoordinator {
                 }
                 try repository.update({ document in
                     guard var committed = document.staged else { throw RuleError.busy }
-                    if Set(committed.policy.applications).isSuperset(of: Set(document.active.policy.applications)),
+                    if committed.policy.selection.isSuperset(of: document.active.policy.selection),
                        (committed.policy.dailyLimitMinutes ?? Int.max) <= (document.active.policy.dailyLimitMinutes ?? Int.max) {
                         committed.reachedCycles.formUnion(document.active.reachedCycles.intersection(Set(committed.cycles.map(\.id))))
                     }

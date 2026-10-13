@@ -10,7 +10,7 @@ struct ActivityReportExtension: DeviceActivityReportExtension {
 
 private struct UsageSummary {
     var duration: TimeInterval
-    var updatedAt: Date?
+    var hasActivityData: Bool
 }
 
 private struct TodayReport: DeviceActivityReportScene {
@@ -19,18 +19,16 @@ private struct TodayReport: DeviceActivityReportScene {
 
     func makeConfiguration(representing data: DeviceActivityResults<DeviceActivityData>) async -> UsageSummary {
         var total: TimeInterval = 0
-        var updated: Date?
+        var hasActivityData = false
         for await device in data {
-            updated = max(updated ?? .distantPast, device.lastUpdatedDate)
+            hasActivityData = true
             for await segment in device.activitySegments {
-                for await category in segment.categories {
-                    for await application in category.applications {
-                        total += application.totalActivityDuration
-                    }
-                }
+                // Use Screen Time's filtered aggregate, including websites and whole
+                // categories, without summing overlapping category and item totals.
+                total += segment.totalActivityDuration
             }
         }
-        return UsageSummary(duration: total, updatedAt: updated)
+        return UsageSummary(duration: total, hasActivityData: hasActivityData)
     }
 }
 
@@ -39,21 +37,19 @@ private struct TodayUsageView: View {
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 5) {
-                Text("Used today").font(.subheadline).foregroundStyle(.white.opacity(0.85))
-                Text(summary.updatedAt == nil ? "—" : Duration.seconds(summary.duration).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))
+                Text("Used today").font(.subheadline).foregroundStyle(Color.primary.opacity(0.85))
+                Text(summary.hasActivityData ? Duration.seconds(summary.duration).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)) : "—")
                     .font(.system(.title, design: .rounded, weight: .semibold))
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                Image(systemName: "hourglass").foregroundStyle(.white.opacity(0.85))
-                if let updated = summary.updatedAt {
-                    Text("Updated \(updated, style: .time)").font(.caption2).foregroundStyle(.white.opacity(0.85))
-                } else {
-                    Text("Waiting for Screen Time").font(.caption).foregroundStyle(.white.opacity(0.85))
+                Image(systemName: "hourglass").foregroundStyle(Color.primary.opacity(0.85))
+                if !summary.hasActivityData {
+                    Text("Waiting for Screen Time").font(.caption).foregroundStyle(Color.primary.opacity(0.85))
                 }
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.primary)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .background(Color.clear)
     }

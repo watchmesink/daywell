@@ -24,31 +24,26 @@ public struct PendingWindows: Codable, Equatable, Sendable {
     public var effectiveAfter: Date
 }
 
-public struct PendingApplications: Codable, Equatable, Sendable {
-    public var applications: [Data]
+public struct PendingSelection: Codable, Equatable, Sendable {
+    public var selection: BlockingSelection
     public var effectiveAfter: Date
 
-    private enum CodingKeys: String, CodingKey { case applications, application, effectiveAfter }
+    private enum CodingKeys: String, CodingKey { case effectiveAfter }
 
-    public init(applications: [Data], effectiveAfter: Date) {
-        self.applications = BlockingPolicy.normalized(applications)
+    public init(selection: BlockingSelection, effectiveAfter: Date) {
+        self.selection = selection.normalized
         self.effectiveAfter = effectiveAfter
     }
 
     public init(from decoder: Decoder) throws {
+        selection = try BlockingSelection(from: decoder)
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        if values.contains(.applications) {
-            applications = try values.decode([Data].self, forKey: .applications)
-        } else {
-            applications = try values.decodeIfPresent(Data.self, forKey: .application).map { [$0] } ?? []
-        }
-        applications = BlockingPolicy.normalized(applications)
         effectiveAfter = try values.decode(Date.self, forKey: .effectiveAfter)
     }
 
     public func encode(to encoder: Encoder) throws {
+        try selection.encode(to: encoder)
         var values = encoder.container(keyedBy: CodingKeys.self)
-        try values.encode(applications, forKey: .applications)
         try values.encode(effectiveAfter, forKey: .effectiveAfter)
     }
 }
@@ -60,18 +55,18 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
     public var reachedCycles: Set<UUID> = []
     public var scheduleTimeZoneIdentifier: String = TimeZone.current.identifier
     public var pendingLimit: PendingLimit?
-    public var pendingApplications: PendingApplications?
+    public var pendingSelection: PendingSelection?
     public var pendingWindows: PendingWindows?
 
     public var hasPendingChanges: Bool {
-        pendingLimit != nil || pendingApplications != nil || pendingWindows != nil
+        pendingLimit != nil || pendingSelection != nil || pendingWindows != nil
     }
 
     public init() {}
 
     private enum CodingKeys: String, CodingKey {
         case generation, policy, cycles, reachedCycles, scheduleTimeZoneIdentifier
-        case pendingLimit, pendingApplications, pendingApplication, pendingWindows
+        case pendingLimit, pendingSelection, pendingApplications, pendingApplication, pendingWindows
     }
 
     public init(from decoder: Decoder) throws {
@@ -83,8 +78,9 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
         scheduleTimeZoneIdentifier = try values.decode(String.self, forKey: .scheduleTimeZoneIdentifier)
         pendingLimit = try values.decodeIfPresent(PendingLimit.self, forKey: .pendingLimit)
         pendingWindows = try values.decodeIfPresent(PendingWindows.self, forKey: .pendingWindows)
-        pendingApplications = try values.decodeIfPresent(PendingApplications.self, forKey: .pendingApplications)
-            ?? values.decodeIfPresent(PendingApplications.self, forKey: .pendingApplication)
+        pendingSelection = try values.decodeIfPresent(PendingSelection.self, forKey: .pendingSelection)
+            ?? values.decodeIfPresent(PendingSelection.self, forKey: .pendingApplications)
+            ?? values.decodeIfPresent(PendingSelection.self, forKey: .pendingApplication)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -96,7 +92,7 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
         try values.encode(scheduleTimeZoneIdentifier, forKey: .scheduleTimeZoneIdentifier)
         try values.encodeIfPresent(pendingLimit, forKey: .pendingLimit)
         try values.encodeIfPresent(pendingWindows, forKey: .pendingWindows)
-        try values.encodeIfPresent(pendingApplications, forKey: .pendingApplications)
+        try values.encodeIfPresent(pendingSelection, forKey: .pendingSelection)
     }
 
     public func currentCycle(at now: Date) -> BudgetCycle? {
@@ -126,10 +122,10 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
             reachedCycles.removeAll()
             pendingLimit = nil
         }
-        if let pending = pendingApplications, now >= pending.effectiveAfter {
-            policy.applications = pending.applications
+        if let pending = pendingSelection, now >= pending.effectiveAfter {
+            policy.selection = pending.selection
             reachedCycles.removeAll()
-            pendingApplications = nil
+            pendingSelection = nil
         }
         if let pending = pendingWindows, now >= pending.effectiveAfter {
             policy.windows = pending.windows
@@ -141,7 +137,7 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
         advance(to: now, calendar: calendar)
         if case .cancelPending = edit {
             pendingLimit = nil
-            pendingApplications = nil
+            pendingSelection = nil
             pendingWindows = nil
             return
         }
@@ -151,7 +147,7 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
             var candidate = policy
             candidate.windows = windows
             try candidate.validate()
-            if policy.applications.isEmpty || candidate.coversSchedule(policy.windows) {
+            if policy.selection.isEmpty || candidate.coversSchedule(policy.windows) {
                 policy = candidate
                 pendingWindows = nil
             } else {
@@ -165,30 +161,31 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
             try candidate.validate()
             if minutes == policy.dailyLimitMinutes {
                 pendingLimit = nil
-            } else if policy.applications.isEmpty || (minutes ?? Int.max) < (policy.dailyLimitMinutes ?? Int.max) {
+            } else if policy.selection.isEmpty || (minutes ?? Int.max) < (policy.dailyLimitMinutes ?? Int.max) {
                 policy.dailyLimitMinutes = minutes
                 pendingLimit = nil
             } else {
                 pendingLimit = PendingLimit(minutes: minutes, effectiveAfter: tomorrow)
             }
-        case .applications(let applications):
-            let normalized = BlockingPolicy.normalized(applications)
-            guard normalized.allSatisfy({ !$0.isEmpty }) else { throw RuleError.invalidApplications }
-            if normalized == policy.applications {
-                pendingApplications = nil
-            } else if policy.applications.isEmpty {
-                policy.applications = normalized
+        case .selection(let selection):
+            let normalized = selection.normalized
+            try normalized.validate()
+            if normalized == policy.selection {
+                pendingSelection = nil
+            } else if policy.selection.isEmpty {
+                policy.selection = normalized
+                pendingSelection = nil
                 reachedCycles.removeAll()
-            } else if Set(normalized).isSuperset(of: Set(policy.applications)) {
-                // Adding apps cannot weaken protection. Keep an exhausted allowance
-                // exhausted for the entire enlarged selection, including the new apps.
-                policy.applications = normalized
-                pendingApplications = nil
+            } else if normalized.isSuperset(of: policy.selection) {
+                // Adding any kind of target cannot weaken protection or reset usage.
+                policy.selection = normalized
+                pendingSelection = nil
             } else {
-                // A replacement can add and remove apps at once. Protect additions
-                // now; retain all existing apps until the queued removal applies.
-                policy.applications = BlockingPolicy.normalized(policy.applications + normalized)
-                pendingApplications = PendingApplications(applications: normalized,
+                // Protect additions now and retain every old target until removal is due.
+                let combined = policy.selection.union(normalized)
+                try combined.validate()
+                policy.selection = combined
+                pendingSelection = PendingSelection(selection: normalized,
                     effectiveAfter: deferredScheduleDate(after: tomorrow, calendar: calendar))
             }
         case .cancelPending: break
@@ -214,16 +211,16 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
     public func decision(at now: Date, calendar: Calendar) -> ShieldDecision {
         let cycle = currentCycle(at: now)
         return ShieldDecision(
-            applications: policy.applications,
+            selection: policy.selection,
             scheduled: policy.scheduleIsActive(at: now, calendar: calendar),
-            budgetExhausted: !policy.applications.isEmpty && policy.dailyLimitMinutes != nil && cycle.map { reachedCycles.contains($0.id) } == true,
+            budgetExhausted: !policy.selection.isEmpty && policy.dailyLimitMinutes != nil && cycle.map { reachedCycles.contains($0.id) } == true,
             nextScheduleTransition: policy.nextScheduleTransition(after: now, calendar: calendar),
             budgetResetsAt: cycle?.end
         )
     }
 
     public mutating func receiveThreshold(activity: String, event: String, at now: Date) {
-        guard event == MonitorSpec.limitEvent, !policy.applications.isEmpty, policy.dailyLimitMinutes != nil else { return }
+        guard event == MonitorSpec.limitEvent, !policy.selection.isEmpty, policy.dailyLimitMinutes != nil else { return }
         for cycle in cycles where activity == MonitorSpec.budgetName(generation: generation, cycle: cycle.id) {
             guard cycle.start <= now && now < cycle.end else { continue }
             reachedCycles.insert(cycle.id)
@@ -234,12 +231,12 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
 public enum RuleEdit: Sendable {
     case windows([BlockWindow])
     case limit(Int?)
-    case applications([Data])
+    case selection(BlockingSelection)
     case cancelPending
 }
 
 public struct ShieldDecision: Equatable, Sendable {
-    public var applications: [Data]
+    public var selection: BlockingSelection
     public var scheduled: Bool
     public var budgetExhausted: Bool
     public var nextScheduleTransition: Date?
@@ -248,7 +245,7 @@ public struct ShieldDecision: Equatable, Sendable {
 }
 
 public struct ProtectionDocument: Codable, Equatable, Sendable {
-    public var schemaVersion = 2
+    public var schemaVersion = 3
     public var active = ProtectionSnapshot()
     public var staged: ProtectionSnapshot?
     public var lastError: String?
@@ -260,7 +257,7 @@ public struct MonitorSpec: Equatable, Sendable {
     public enum Kind: Equatable, Sendable {
         case midnight(timeZoneIdentifier: String)
         case window(BlockWindow, timeZoneIdentifier: String)
-        case budget(BudgetCycle, applications: [Data], minutes: Int)
+        case budget(BudgetCycle, selection: BlockingSelection, minutes: Int)
     }
     public var name: String
     public var kind: Kind
@@ -273,8 +270,8 @@ public struct MonitorSpec: Equatable, Sendable {
     }
 
     public static func plan(for snapshot: ProtectionSnapshot) -> [MonitorSpec] {
-        let applications = snapshot.policy.applications
-        guard !applications.isEmpty else { return [] }
+        let selection = snapshot.policy.selection
+        guard !selection.isEmpty else { return [] }
         guard !snapshot.policy.windows.isEmpty || snapshot.policy.dailyLimitMinutes != nil
                 || snapshot.hasPendingChanges else { return [] }
         var specs = [MonitorSpec(name: midnightName + "." + snapshot.generation.uuidString,
@@ -286,7 +283,7 @@ public struct MonitorSpec: Equatable, Sendable {
         if let minutes = snapshot.policy.dailyLimitMinutes {
             specs += snapshot.cycles.map {
                 MonitorSpec(name: budgetName(generation: snapshot.generation, cycle: $0.id),
-                            kind: .budget($0, applications: applications, minutes: minutes))
+                            kind: .budget($0, selection: selection, minutes: minutes))
             }
         }
         return specs

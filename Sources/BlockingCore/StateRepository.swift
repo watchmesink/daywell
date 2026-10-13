@@ -28,7 +28,7 @@ public final class StateRepository: @unchecked Sendable {
         try withLock("state") {
             var document = try readUnlocked()
             let result = try change(&document)
-            if document.schemaVersion == 1 { document.schemaVersion = 2 }
+            if (1...2).contains(document.schemaVersion) { document.schemaVersion = 3 }
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.sortedKeys]
             let data = try encoder.encode(document)
@@ -54,7 +54,7 @@ public final class StateRepository: @unchecked Sendable {
     private func readUnlocked() throws -> ProtectionDocument {
         guard FileManager.default.fileExists(atPath: documentURL.path) else { return ProtectionDocument() }
         let document = try JSONDecoder().decode(ProtectionDocument.self, from: Data(contentsOf: documentURL))
-        guard document.schemaVersion == 1 || document.schemaVersion == 2 else { throw RuleError.unsupportedSchema }
+        guard (1...3).contains(document.schemaVersion) else { throw RuleError.unsupportedSchema }
         return document
     }
 

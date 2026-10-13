@@ -26,11 +26,11 @@ final class AppModel: ObservableObject {
     }
 
     var snapshot: ProtectionSnapshot { document.active }
-    var tokens: [ApplicationToken]? { ProtectionEnvironment.applications(from: snapshot.policy.applications) }
-    var editableTokens: [ApplicationToken]? {
-        ProtectionEnvironment.applications(from: snapshot.pendingApplications?.applications ?? snapshot.policy.applications)
+    var selection: FamilyActivitySelection? { ProtectionEnvironment.selection(from: snapshot.policy.selection) }
+    var editableSelection: FamilyActivitySelection? {
+        ProtectionEnvironment.selection(from: snapshot.pendingSelection?.selection ?? snapshot.policy.selection)
     }
-    var hasApplications: Bool { !snapshot.policy.applications.isEmpty }
+    var hasSelection: Bool { !snapshot.policy.selection.isEmpty }
     var hasRules: Bool { !snapshot.policy.windows.isEmpty || snapshot.policy.dailyLimitMinutes != nil }
 
     func authorize() async {
@@ -86,7 +86,7 @@ final class AppModel: ObservableObject {
         guard !working else { error = RuleError.busy.localizedDescription; return false }
         let editingDraft: Bool
         switch edit {
-        case .windows, .limit: editingDraft = !hasApplications
+        case .windows, .limit: editingDraft = !hasSelection
         default: editingDraft = false
         }
         guard authorized || editingDraft else { error = "Enable Screen Time access before changing protection."; return false }

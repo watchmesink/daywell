@@ -20,16 +20,23 @@ func date(_ value: String, zone: String = "Europe/Amsterdam") -> Date {
 let selectedApp = Data("opaque-app-token".utf8)
 let anotherApp = Data("opaque-other-token".utf8)
 
+// Explicit schedule fixtures: new users start without any blocking windows.
+let sampleWindows: [BlockWindow] = [
+    BlockWindow(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!, startMinute: 360, endMinute: 600),
+    BlockWindow(id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!, startMinute: 1320, endMinute: 0)
+]
+
 func activeSnapshot(at now: Date = date("2026-10-08 14:00:00")) -> ProtectionSnapshot {
     var value = ProtectionSnapshot()
-    value.policy.applications = [selectedApp]
+    value.policy.selection.applications = [selectedApp]
+    value.policy.windows = sampleWindows
     value.advance(to: now, calendar: calendar())
     return value
 }
 
 final class RulesTests: XCTestCase {
-    func testDefaultWindowsAreStartInclusiveAndEndExclusive() {
-        let policy = BlockingPolicy(applications: [selectedApp])
+    func testConfiguredWindowsAreStartInclusiveAndEndExclusive() {
+        let policy = BlockingPolicy(applications: [selectedApp], windows: sampleWindows)
         for (time, blocked) in [("05:59:59", false), ("06:00:00", true), ("09:59:59", true),
                                 ("10:00:00", false), ("21:59:59", false), ("22:00:00", true),
                                 ("23:59:59", true), ("00:00:00", false)] {
@@ -38,19 +45,20 @@ final class RulesTests: XCTestCase {
     }
 
     func testNoSelectionDoesNotLockOnboarding() {
-        let policy = BlockingPolicy()
+        let policy = BlockingPolicy(windows: sampleWindows)
         XCTAssertFalse(policy.scheduleIsActive(at: date("2026-10-08 07:00:00"), calendar: calendar()))
     }
 
     func testMultipleAppsShareTheSameScheduleAndBudgetMonitor() throws {
         let now = date("2026-10-08 14:00:00")
         var state = ProtectionSnapshot()
-        try state.apply(.applications([anotherApp, selectedApp, selectedApp]), at: now, calendar: calendar())
-        XCTAssertEqual(Set(state.policy.applications), Set([selectedApp, anotherApp]))
-        XCTAssertEqual(state.policy.applications.count, 2)
+        state.policy.windows = sampleWindows
+        try state.apply(.selection(.init(applications: [anotherApp, selectedApp, selectedApp])), at: now, calendar: calendar())
+        XCTAssertEqual(Set(state.policy.selection.applications), Set([selectedApp, anotherApp]))
+        XCTAssertEqual(state.policy.selection.applications.count, 2)
         XCTAssertTrue(state.decision(at: date("2026-10-08 07:00:00"), calendar: calendar()).scheduled)
         let budgets = MonitorSpec.plan(for: state).compactMap { spec -> [Data]? in
-            if case .budget(_, let applications, _) = spec.kind { return applications }
+            if case .budget(_, let selection, _) = spec.kind { return selection.applications }
             return nil
         }
         XCTAssertEqual(budgets.count, 2)
@@ -59,7 +67,7 @@ final class RulesTests: XCTestCase {
                                event: MonitorSpec.limitEvent, at: now)
         let decision = state.decision(at: now, calendar: calendar())
         XCTAssertTrue(decision.budgetExhausted)
-        XCTAssertEqual(Set(decision.applications), Set([selectedApp, anotherApp]))
+        XCTAssertEqual(Set(decision.selection.applications), Set([selectedApp, anotherApp]))
     }
 
     func testOvernightWindowIncludesPreviousDaysOccurrence() {
@@ -98,7 +106,7 @@ final class RulesTests: XCTestCase {
     func testSpringDSTUsesCalendarDayRatherThanTwentyFourHours() {
         let cycle = BudgetCycle(containing: date("2026-03-29 12:00:00"), calendar: calendar())
         XCTAssertEqual(cycle.end.timeIntervalSince(cycle.start), 23 * 3600)
-        let policy = BlockingPolicy(applications: [selectedApp])
+        let policy = BlockingPolicy(applications: [selectedApp], windows: sampleWindows)
         XCTAssertTrue(policy.scheduleIsActive(at: date("2026-03-29 06:00:00"), calendar: calendar()))
         XCTAssertFalse(policy.scheduleIsActive(at: date("2026-03-29 10:00:00"), calendar: calendar()))
     }
@@ -122,12 +130,12 @@ final class RulesTests: XCTestCase {
 final class EditTests: XCTestCase {
     func testActiveScheduleAcceptsEditsWithoutWeakeningTodaysProtection() throws {
         let now = date("2026-10-08 07:00:00")
-        for edit in [RuleEdit.windows([]), .applications([]), .applications([anotherApp]), .limit(60), .limit(nil)] {
+        for edit in [RuleEdit.windows([]), .selection(.init(applications: [])), .selection(.init(applications: [anotherApp])), .limit(60), .limit(nil)] {
             var state = activeSnapshot(at: now)
             try state.apply(edit, at: now, calendar: calendar())
             XCTAssertTrue(state.hasPendingChanges)
-            XCTAssertTrue(state.policy.applications.contains(selectedApp))
-            XCTAssertEqual(state.policy.windows, BlockWindow.defaults)
+            XCTAssertTrue(state.policy.selection.applications.contains(selectedApp))
+            XCTAssertEqual(state.policy.windows, sampleWindows)
             XCTAssertEqual(state.policy.dailyLimitMinutes, 30)
             XCTAssertTrue(state.decision(at: now, calendar: calendar()).scheduled)
         }
@@ -140,7 +148,7 @@ final class EditTests: XCTestCase {
     func testScheduleRemovalQueuesEvenOutsideActiveWindow() throws {
         var state = activeSnapshot()
         try state.apply(.windows([]), at: date("2026-10-08 10:00:00"), calendar: calendar())
-        XCTAssertEqual(state.policy.windows, BlockWindow.defaults)
+        XCTAssertEqual(state.policy.windows, sampleWindows)
         XCTAssertEqual(state.pendingWindows?.effectiveAfter, date("2026-10-09 00:00:00"))
         state.advance(to: date("2026-10-09 00:00:00"), calendar: calendar())
         XCTAssertTrue(state.policy.windows.isEmpty)
@@ -149,12 +157,13 @@ final class EditTests: XCTestCase {
 
     func testInitialActivationDuringMorningAllowsQueuedRemoval() throws {
         var state = ProtectionSnapshot()
+        state.policy.windows = sampleWindows
         let now = date("2026-10-08 08:00:00")
-        try state.apply(.applications([selectedApp]), at: now, calendar: calendar())
+        try state.apply(.selection(.init(applications: [selectedApp])), at: now, calendar: calendar())
         XCTAssertTrue(state.decision(at: now, calendar: calendar()).scheduled)
-        try state.apply(.applications([]), at: now, calendar: calendar())
-        XCTAssertEqual(state.policy.applications, [selectedApp])
-        XCTAssertEqual(state.pendingApplications?.applications, [])
+        try state.apply(.selection(.init(applications: [])), at: now, calendar: calendar())
+        XCTAssertEqual(state.policy.selection.applications, [selectedApp])
+        XCTAssertEqual(state.pendingSelection?.selection.applications, [])
     }
 
     func testAllowanceIncreaseQueuesWithoutClearingExhaustion() throws {
@@ -192,25 +201,25 @@ final class EditTests: XCTestCase {
     func testAppReplacementWaitsThroughAnOvernightBlock() throws {
         var state = activeSnapshot()
         state.policy.windows = [.init(startMinute: 22 * 60, endMinute: 7 * 60)]
-        try state.apply(.applications([anotherApp]), at: date("2026-10-08 14:00:00"), calendar: calendar())
+        try state.apply(.selection(.init(applications: [anotherApp])), at: date("2026-10-08 14:00:00"), calendar: calendar())
         state.advance(to: date("2026-10-09 00:00:00"), calendar: calendar())
-        XCTAssertEqual(Set(state.policy.applications), Set([selectedApp, anotherApp]))
-        XCTAssertEqual(state.pendingApplications?.effectiveAfter, date("2026-10-09 07:00:00"))
+        XCTAssertEqual(Set(state.policy.selection.applications), Set([selectedApp, anotherApp]))
+        XCTAssertEqual(state.pendingSelection?.effectiveAfter, date("2026-10-09 07:00:00"))
         state.advance(to: date("2026-10-09 07:00:00"), calendar: calendar())
-        XCTAssertEqual(state.policy.applications, [anotherApp])
-        XCTAssertNil(state.pendingApplications)
+        XCTAssertEqual(state.policy.selection.applications, [anotherApp])
+        XCTAssertNil(state.pendingSelection)
     }
 
     func testAddingAppsAppliesDuringBlockAndPreservesTodaysExhaustion() throws {
         let now = date("2026-10-08 07:00:00")
         var state = activeSnapshot(at: now)
         state.reachedCycles.insert(state.cycles[0].id)
-        try state.apply(.applications([anotherApp, selectedApp]), at: now, calendar: calendar())
-        XCTAssertEqual(Set(state.policy.applications), Set([selectedApp, anotherApp]))
-        XCTAssertNil(state.pendingApplications)
+        try state.apply(.selection(.init(applications: [anotherApp, selectedApp])), at: now, calendar: calendar())
+        XCTAssertEqual(Set(state.policy.selection.applications), Set([selectedApp, anotherApp]))
+        XCTAssertNil(state.pendingSelection)
         XCTAssertTrue(state.decision(at: now, calendar: calendar()).budgetExhausted)
         state.advance(to: date("2026-10-09 00:00:00"), calendar: calendar())
-        XCTAssertEqual(Set(state.policy.applications), Set([selectedApp, anotherApp]))
+        XCTAssertEqual(Set(state.policy.selection.applications), Set([selectedApp, anotherApp]))
         XCTAssertFalse(state.decision(at: date("2026-10-09 00:00:00"), calendar: calendar()).budgetExhausted)
     }
 
@@ -228,11 +237,11 @@ final class EditTests: XCTestCase {
         var state = activeSnapshot()
         try state.apply(.limit(90), at: date("2026-10-08 14:00:00"), calendar: calendar())
         try state.apply(.windows([]), at: date("2026-10-08 14:00:00"), calendar: calendar())
-        try state.apply(.applications([]), at: date("2026-10-08 14:00:00"), calendar: calendar())
+        try state.apply(.selection(.init(applications: [])), at: date("2026-10-08 14:00:00"), calendar: calendar())
         try state.apply(.cancelPending, at: date("2026-10-08 22:30:00"), calendar: calendar())
         XCTAssertFalse(state.hasPendingChanges)
-        XCTAssertEqual(state.policy.windows, BlockWindow.defaults)
-        XCTAssertEqual(state.policy.applications, [selectedApp])
+        XCTAssertEqual(state.policy.windows, sampleWindows)
+        XCTAssertEqual(state.policy.selection.applications, [selectedApp])
         XCTAssertEqual(state.policy.dailyLimitMinutes, 30)
         XCTAssertTrue(state.decision(at: date("2026-10-08 22:30:00"), calendar: calendar()).scheduled)
     }

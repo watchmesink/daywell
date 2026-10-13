@@ -20,17 +20,35 @@ enum ProtectionEnvironment {
         ProtectionCoordinator(repository: try repository(), driver: ScreenTimeDriver())
     }
 
-    static func applications(from data: [Data]) -> [ApplicationToken]? {
+    static func selection(from data: BlockingSelection) -> FamilyActivitySelection? {
         let decoder = JSONDecoder()
-        return try? data.map { try decoder.decode(ApplicationToken.self, from: $0) }
+        // Decode every kind before touching any shields; a partially decoded selection
+        // must never silently remove a restriction.
+        guard let applications = try? data.applications.map({ try decoder.decode(ApplicationToken.self, from: $0) }),
+              let categories = try? data.categories.map({ try decoder.decode(ActivityCategoryToken.self, from: $0) }),
+              let websites = try? data.webDomains.map({ try decoder.decode(WebDomainToken.self, from: $0) }) else { return nil }
+        var selection = FamilyActivitySelection(includeEntireCategory: true)
+        selection.applicationTokens = Set(applications)
+        selection.categoryTokens = Set(categories)
+        selection.webDomainTokens = Set(websites)
+        return selection
+    }
+
+    static func encodedSelection(_ selection: FamilyActivitySelection) throws -> BlockingSelection {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return try BlockingSelection(
+            applications: selection.applicationTokens.map { try encoder.encode($0) },
+            categories: selection.categoryTokens.map { try encoder.encode($0) },
+            webDomains: selection.webDomainTokens.map { try encoder.encode($0) })
     }
 
     enum EnvironmentError: LocalizedError {
-        case appGroupUnavailable, invalidApplications
+        case appGroupUnavailable, invalidSelection
         var errorDescription: String? {
             switch self {
             case .appGroupUnavailable: return "Shared storage is unavailable. Check that the app and all extensions use the same App Group in Signing & Capabilities."
-            case .invalidApplications: return "The selected apps could not be read. Existing protection has been retained."
+            case .invalidSelection: return "The selected apps, categories, or websites could not be read. Existing protection has been retained."
             }
         }
     }
@@ -55,8 +73,8 @@ final class ScreenTimeDriver: ProtectionDriver {
                 intervalStart: wallTime(window.startMinute, zone: zone),
                 intervalEnd: wallTime(window.endMinute, zone: zone), repeats: true)
         case .budget(let cycle, let data, let minutes):
-            guard let tokens = ProtectionEnvironment.applications(from: data), !tokens.isEmpty else {
-                throw ProtectionEnvironment.EnvironmentError.invalidApplications
+            guard let selection = ProtectionEnvironment.selection(from: data), !selection.isEmpty else {
+                throw ProtectionEnvironment.EnvironmentError.invalidSelection
             }
             var calendar = Calendar(identifier: .gregorian)
             calendar.timeZone = TimeZone(identifier: cycle.timeZoneIdentifier) ?? .current
@@ -64,7 +82,8 @@ final class ScreenTimeDriver: ProtectionDriver {
             schedule = DeviceActivitySchedule(intervalStart: calendar.dateComponents(components, from: cycle.start),
                                               intervalEnd: calendar.dateComponents(components, from: cycle.end), repeats: false)
             events[.init(MonitorSpec.limitEvent)] = DeviceActivityEvent(
-                applications: Set(tokens), threshold: DateComponents(minute: minutes), includesPastActivity: true)
+                applications: selection.applicationTokens, categories: selection.categoryTokens,
+                webDomains: selection.webDomainTokens, threshold: DateComponents(minute: minutes), includesPastActivity: true)
         }
         try center.startMonitoring(.init(monitor.name), during: schedule, events: events)
     }
@@ -81,25 +100,41 @@ final class ScreenTimeDriver: ProtectionDriver {
 
     func apply(_ decision: ShieldDecision) {
         // Clearing restrictions must also work if a saved token is no longer readable.
-        if !decision.isBlocked {
-            scheduleStore.shield.applications = nil
-            budgetStore.shield.applications = nil
+        guard decision.isBlocked, !decision.selection.isEmpty else {
+            setShields(nil, in: scheduleStore)
+            setShields(nil, in: budgetStore)
             return
         }
-        if !decision.applications.isEmpty {
-            guard let tokens = ProtectionEnvironment.applications(from: decision.applications), !tokens.isEmpty else {
-                ProtectionEnvironment.logger.error("Cannot decode selected tokens; retaining existing shields.")
-                return
-            }
-            let selection = Set(tokens)
-            // Set the restrictive layer first, avoiding a gap during transitions.
-            if decision.scheduled { scheduleStore.shield.applications = selection }
-            if decision.budgetExhausted { budgetStore.shield.applications = selection }
-            if !decision.scheduled { scheduleStore.shield.applications = nil }
-            if !decision.budgetExhausted { budgetStore.shield.applications = nil }
-        } else {
-            scheduleStore.shield.applications = nil
-            budgetStore.shield.applications = nil
+        guard let selection = ProtectionEnvironment.selection(from: decision.selection), !selection.isEmpty else {
+            ProtectionEnvironment.logger.error("Cannot decode selected tokens; retaining existing shields.")
+            return
         }
+        // Set every restrictive layer before clearing an inactive layer.
+        if decision.scheduled { setShields(selection, in: scheduleStore) }
+        if decision.budgetExhausted { setShields(selection, in: budgetStore) }
+        if !decision.scheduled { setShields(nil, in: scheduleStore) }
+        if !decision.budgetExhausted { setShields(nil, in: budgetStore) }
+    }
+
+    private func setShields(_ selection: FamilyActivitySelection?, in store: ManagedSettingsStore) {
+        let apps = selection?.applicationTokens ?? []
+        let categories = selection?.categoryTokens ?? []
+        let websites = selection?.webDomainTokens ?? []
+        store.shield.applications = apps.isEmpty ? nil : apps
+        store.shield.webDomains = websites.isEmpty ? nil : websites
+        store.shield.applicationCategories = categories.isEmpty ? nil : .specific(categories)
+        store.shield.webDomainCategories = categories.isEmpty ? nil : .specific(categories)
+    }
+}
+
+extension FamilyActivitySelection {
+    var isEmpty: Bool {
+        applicationTokens.isEmpty && categoryTokens.isEmpty && webDomainTokens.isEmpty
+    }
+
+    func isSuperset(of other: FamilyActivitySelection) -> Bool {
+        applicationTokens.isSuperset(of: other.applicationTokens)
+            && categoryTokens.isSuperset(of: other.categoryTokens)
+            && webDomainTokens.isSuperset(of: other.webDomainTokens)
     }
 }

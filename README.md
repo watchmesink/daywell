@@ -6,7 +6,7 @@
 
 **Make room for your day.**
 
-Daywell is a free, open-source iPhone app that helps you spend less time doomscrolling. Choose distracting apps such as Instagram, TikTok, or X, set daily blocking windows and a shared time allowance, and let Apple’s Screen Time APIs enforce your routine.
+Daywell is a free, open-source iPhone app that helps you spend less time doomscrolling. Choose distracting apps such as Instagram, TikTok, or X, whole categories, or websites, set daily blocking windows and a shared time allowance, and let Apple’s Screen Time APIs enforce your routine.
 
 No subscription, account, analytics, advertising, or server. Built with SwiftUI for iOS 17.4 and later.
 
@@ -24,8 +24,8 @@ Real iPhone captures of the dashboard, app selection, and shared allowance.
 
 ## Features
 
-- Block selected apps during up to seven daily windows, including overnight schedules.
-- Set one shared daily allowance across all selected apps.
+- Block selected apps, whole categories, and websites during up to seven daily windows, including overnight schedules.
+- Set one shared daily allowance across all selected apps, categories, and websites.
 - Use scheduled blocks, an allowance, or both.
 - See today’s usage and upcoming rule changes on the dashboard.
 - Tighten limits immediately; changes that relax protection wait until the next day after any overnight block.
@@ -37,22 +37,21 @@ The ocean-sunset artwork is adapted from [ascii.rest](https://ascii.rest/ocean-s
 
 ## Your starting routine
 
-Choose one or more installed apps in Apple's private app picker, then activate:
+New users start with a shared allowance and no daily blocking windows. Add daily blocks if you want them, choose apps, categories, or websites in Apple's private Screen Time picker, then activate. Website-only and category-only selections also work:
 
 | Rule | Default |
 | --- | --- |
-| Morning block | Every day, 06:00–10:00 |
-| Evening block | Every day, 22:00–00:00 |
-| Shared daily allowance | 30 minutes total across all selected apps and sessions |
+| Daily blocks | None; add your own schedule |
+| Shared daily allowance | 30 minutes total across all selected activity and sessions |
 
-Scheduled blocks apply to every selected app. Outside those windows, time in all selected apps is added together. For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance; both apps are then blocked. The blocking screen offers **Close** only.
+Scheduled blocks apply to everything selected. Outside those windows, selected app, category, and website activity shares one allowance. For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance; both apps are then blocked. The blocking screen offers **Close** only.
 
-- Edit apps, daily windows, and the allowance at any time, including during a scheduled block.
+- Edit your selection, daily windows, and the allowance at any time, including during a scheduled block.
 - Overnight and overlapping windows are supported. Each window must span at least 15 minutes.
 - Schedule edits that retain all existing blocked minutes apply immediately. Edits that free blocked time are saved for the next day, after any occurrence spanning midnight ends.
 - Use daily blocks, a shared daily allowance, or both. The combined rules card shows only configured rules, with controls to add missing ones.
-- Allowance reductions apply immediately. Once apps are protected, increases or removal take effect at the next budget reset and appear under Upcoming changes. Draft rules can be removed immediately before activation.
-- Adding apps applies immediately without resetting the shared allowance. Removing apps takes effect the next day, after any occurrence spanning midnight ends. When replacing apps, additions apply now and removals wait. Upcoming changes shows the target rules and apps, effective dates, and a cancel action; editors reopen with the queued values.
+- Allowance reductions apply immediately. Once protection is active, increases or removal take effect at the next budget reset and appear under Upcoming changes. Draft rules can be removed immediately before activation.
+- Adding apps, categories, or websites applies immediately without resetting the shared allowance. Removals take effect the next day, after any occurrence spanning midnight ends. Mixed replacements add now and remove later. Upcoming changes shows the target rules and selection, effective dates, and a cancel action; editors reopen with the queued values.
 - Today's use includes earlier activity reported by iOS, including activity before initial setup or a monitoring repair.
 - Any installed apps can be selected, including Instagram, TikTok, X, and Threads. Up to seven windows leave enough iOS monitor slots to register a replacement before retiring the previous configuration.
 
@@ -66,7 +65,7 @@ Requires macOS, Xcode with an iOS SDK, and iOS **17.4 or later**. The project ha
 2. Set your Apple Developer **Team ID**, a unique bundle prefix, and a matching App Group. The local file is ignored by Git.
 3. Open `Daywell.xcodeproj`, select the **Daywell** scheme and your connected iPhone.
 4. Confirm automatic signing, Family Controls, and the shared App Group on the app and extensions. See [the signing guide](docs/SIGNING.md).
-5. Build and run. Grant Screen Time access, select the apps you want to block, review your rules, then activate protection.
+5. Build and run. Grant Screen Time access, select the apps, categories, or websites you want to block, review your rules, then activate protection.
 
 The checked-in Xcode project can be opened directly. After changing targets or adding source files, regenerate it from `project.yml`:
 

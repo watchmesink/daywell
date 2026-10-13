@@ -1,0 +1,107 @@
+Observed in Dia on 2026-10-10. App Store Connect → TestFlight → 1.0 (2) → Build Metadata.
+URL: https://appstoreconnect.apple.com/teams/412c5bea-4898-45a8-9011-b1242e545b75/apps/6820666833/testflight/ios/cc965576-6272-4bac-977a-2cca059453b6/metadata
+
+
+General Information
+App Name
+Daywell: Control Screen time
+Binary State
+Validated
+Bundle Short Version String
+1.0
+Upload Date
+Oct 9, 2026 at 10:39 AM
+Build SDK
+23F81a
+Bundle Version String
+2
+Original File Name
+07d664ce-cd08-4ad9-be19-b9c07f940aa7.ipa
+Build Platform
+23F81a
+Bundle ID
+dev.glebmelnikov.InstaBlock
+Compressed File Size
+6.26 MB
+
+On Demand Resources
+No
+Includes Symbols
+Yes
+App Uses Non-Exempt Encryption
+No
+SiriKit
+No
+Watch-Only App
+No
+
+iMessage App
+Includes iMessage App
+No
+Includes Stickers
+No
+App Icon Hidden
+No
+
+Device Requirements
+Minimum iOS Version
+17.4
+Minimum macOS Version
+14.4
+Minimum visionOS Version
+1.1
+LS Minimum System Version
+-
+Supported Architectures
+arm64
+Device Protocols
+-
+Device Family
+iPhone
+Required Capabilities
+arm64
+
+Store Information
+Localizations
+English
+Entitlements
+Daywell.app/PlugIns/ShieldConfiguration.appex/ShieldConfiguration
+    application-identifier: VA23K94D58.dev.glebmelnikov.InstaBlock.ShieldConfiguration
+    beta-reports-active: true
+    get-task-allow: false
+    com.apple.developer.team-identifier: VA23K94D58
+    com.apple.security.application-groups: ( "group.dev.glebmelnikov.InstaBlock" )
+    com.apple.developer.family-controls: true
+Daywell.app/PlugIns/ShieldAction.appex/ShieldAction
+    application-identifier: VA23K94D58.dev.glebmelnikov.InstaBlock.ShieldAction
+    beta-reports-active: true
+    get-task-allow: false
+    com.apple.developer.team-identifier: VA23K94D58
+    com.apple.security.application-groups: ( "group.dev.glebmelnikov.InstaBlock" )
+    com.apple.developer.family-controls: true
+Daywell.app/PlugIns/ActivityMonitor.appex/ActivityMonitor
+    application-identifier: VA23K94D58.dev.glebmelnikov.InstaBlock.ActivityMonitor
+    beta-reports-active: true
+    get-task-allow: false
+    com.apple.developer.team-identifier: VA23K94D58
+    com.apple.security.application-groups: ( "group.dev.glebmelnikov.InstaBlock" )
+    com.apple.developer.family-controls: true
+Daywell.app/Extensions/ActivityReport.appex/ActivityReport
+    application-identifier: VA23K94D58.dev.glebmelnikov.InstaBlock.ActivityReport
+    beta-reports-active: true
+    get-task-allow: false
+    com.apple.developer.team-identifier: VA23K94D58
+    com.apple.security.application-groups: ( "group.dev.glebmelnikov.InstaBlock" )
+    com.apple.developer.family-controls: true
+Daywell.app/Daywell
+    application-identifier: VA23K94D58.dev.glebmelnikov.InstaBlock
+    beta-reports-active: true
+    get-task-allow: false
+    com.apple.developer.team-identifier: VA23K94D58
+    com.apple.security.application-groups: ( "group.dev.glebmelnikov.InstaBlock" )
+    com.apple.developer.family-controls: true
+
+Newsstand App
+No
+Prerendered Icon Flag
+Yes
