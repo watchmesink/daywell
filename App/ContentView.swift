@@ -86,7 +86,7 @@ struct ContentView: View {
                         } label: {
                             HStack {
                                 if model.working { ProgressView().tint(.white) }
-                                Text(model.authorized ? "Choose what to block" : "Enable Screen Time access")
+                                Text(model.authorized ? "Choose what to block" : "Continue")
                                 Image(systemName: "arrow.right")
                             }
                         }
@@ -110,7 +110,7 @@ struct ContentView: View {
                                 .font(.headline)
                             Text("Screen Time access is off. Your saved rules remain, but iOS cannot enforce them until you enable access again.")
                                 .font(.subheadline).foregroundStyle(.secondary)
-                            Button("Enable access") { Task { await model.authorize() } }
+                            Button("Continue") { Task { await model.authorize() } }
                                 .buttonStyle(PrimaryButton()).disabled(model.working)
                         }
                     }

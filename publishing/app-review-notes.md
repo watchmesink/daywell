@@ -1,9 +1,14 @@
-# App Review notes draft
+# App Review notes
 
-Daywell is a free, self-directed Screen Time app. It has no login or server. It requires individual Family Controls authorization on a physical iPhone. On first launch, tap **Enable Screen Time access**, approve Apple's permission sheet, then tap **Choose apps & start**. In Apple's picker, expand a category and select one or more individual installed apps; categories and websites are not supported. Save with **Activate protection**.
+Daywell is a self-directed Screen Time app with no login or server. It requires individual Family Controls authorization on a physical iPhone.
 
-For a short test, edit a daily block to begin soon and last at least 15 minutes, or reduce the shared allowance to 1–2 minutes. Use a selected app and return after the threshold. The selected apps should receive the system shield; its action is **Close**. The app uses Device Activity callbacks, so iOS may not apply a change instantly. App use from earlier today may already count toward the shared allowance.
+On first launch, tap **Continue** to open Apple's Screen Time authorization sheet. After authorization, tap **Choose what to block**, select apps, categories, or websites in Apple's private Screen Time picker, then tap **Activate protection**.
 
-The device owner can bypass enforcement by revoking Screen Time permission or uninstalling Daywell. The app has no account, subscription, or in-app purchases. The app uses Apple's Family Controls, Device Activity, and Managed Settings frameworks; it stores selected app tokens and rule state only in its local App Group container.
+For a short test, add a daily block beginning soon and lasting at least 15 minutes, or set the shared allowance to 1–2 minutes. Use a selected app and return after the threshold. Selected activity should receive the system shield; its action is **Close**. iOS controls Device Activity callbacks, so blocking and usage updates may be delayed. Activity from earlier today may already count toward the allowance.
 
-Before submission, update these notes with any measured callback delay from physical-device validation and verify the wording against the actual release build.
+The device owner can revoke Screen Time permission in Settings or uninstall Daywell. The app has no account or in-app purchases. It uses Apple's Family Controls, Device Activity, and Managed Settings frameworks and stores selections and rules only in its local App Group container.
+
+## October 15 review corrections — version 1.1 (5)
+
+- Guideline 2.3.7: removed pricing references from the screenshots and subtitle. The final screenshot now describes daily blocks and the shared allowance. Promotional text also no longer mentions pricing.
+- Guideline 5.1.1(iv): the buttons preceding Screen Time authorization now say **Continue**, including the reauthorization flow. Apple's permission sheet remains responsible for granting or declining access.

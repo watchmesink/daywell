@@ -43,9 +43,9 @@ SLIDES = [
     ('05-private', 'apps-dark.png',
      'Private\nby default.',
      'Daywell never sees which apps you chose. Your rules stay on your iPhone.'),
-    ('06-free', 'allowance-dark.png',
-     'Free. Nothing\nto unlock.',
-     'No subscription, no ads, no in-app purchases. Open source on GitHub.'),
+    ('06-your-routine', 'allowance-dark.png',
+     'Your time.\nYour routine.',
+     'Set daily blocks and a shared allowance that fit your day.'),
 ]
 
 
