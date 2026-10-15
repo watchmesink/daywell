@@ -5,13 +5,13 @@
 | Platform | iOS (iPhone) |
 | Bundle ID | dev.glebmelnikov.InstaBlock |
 | Name | Daywell: Simple App Blocker (27/30). Replaces “Daywell: Control Screen time”; “Daywell” alone was unavailable. |
-| Subtitle | Screen time, free & private (27/30) |
-| Promotional text | Free and open source. No account, no subscription, no ads, no analytics. Pick the apps that eat your time, set a daily routine, and let iOS keep it in place. (157/170) |
+| Subtitle | Screen time, simple & private (29/30) |
+| Promotional text | Pick the apps that eat your time, set a daily routine, and let iOS keep it in place. No account, no ads, no analytics. Open source. |
 | Primary category | Productivity |
 | Price | Free ($0.00), saved in App Store Connect for all 175 territories on October 9, 2026. |
 | Age rating | Apple-calculated 9+ in 172 regions, with country-specific ratings elsewhere |
 | Copyright | 2026 Daywell contributors |
-| Version | 1.1 (4), submitted for review October 13, 2026 |
+| Version | 1.1 (5), resubmitted October 15, 2026 at 09:08 UTC; Waiting for Review |
 | Minimum OS | iOS 17.4 |
 | Keywords | focus,distraction,doomscrolling,social media,limit,schedule,routine,wellbeing,habit,productivity (96/100; avoids repeating name and subtitle words) |
 | Privacy Policy URL | https://daywell-support.tunedtoast2.chatgpt.site/privacy.html |
@@ -64,7 +64,7 @@ Six slides in `publishing/screenshots/`, alternating light and dark appearance, 
 | 3 | Core feature | One allowance, shared. | Allowance editor, light |
 | 4 | Simplicity | Simple by design. | Dashboard, light |
 | 5 | Privacy | Private by default. | Selection editor, dark |
-| 6 | Free | Free. Nothing to unlock. | Allowance editor, dark |
+| 6 | Your routine | Your time. Your routine. | Allowance editor, dark |
 
 To regenerate: `bash scripts/make-store-captures.sh` renders the real app views on the iPhone 17 Pro simulator into `build/store-captures/`, then `python3 scripts/make-store-screenshots.py` composes the slides. The simulator can’t authorize Screen Time or create activity tokens, so `scripts/store-preview/Fixture.swift` supplies a sample routine and draws Social, Entertainment, and Games tiles where iOS would render the selected items. The status bar is fixed at 09:41.
 
