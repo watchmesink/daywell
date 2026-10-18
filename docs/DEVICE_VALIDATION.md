@@ -19,7 +19,7 @@ A simulator build and core tests cannot verify Apple's authorization, callback d
 | Category-only / website-only selection | Activation succeeds, rules and usage monitors apply, and choices survive reopening | Pending |
 | Category website shield | Websites within a selected category receive the custom Close-only shield | Pending |
 | Existing installation update | Old app selections, exhausted allowance, and queued changes survive the schema upgrade | Pending |
-| Shield buttons | Close only; no bypass or extra-time control | Pending |
+| Shield buttons in light/dark mode | Native button colors and label; closes the blocked app, with no bypass or extra-time control | Pending |
 | Edit during a scheduled block | All editors open and save. Lower allowances, added apps, and more blocked time apply immediately; weaker edits appear under Upcoming changes and retain current protection | Pending |
 | End scheduled window with allowance left | Selected activity becomes usable; daily usage is retained | Pending |
 | Split usage across apps, categories, websites, and sessions | Combined usage reaches one shared daily threshold | Pending |
@@ -36,7 +36,9 @@ A simulator build and core tests cannot verify Apple's authorization, callback d
 | Revoke / restore Screen Time access | App reports lost access; restoration reapplies saved restrictions | Pending |
 | Uninstall | iOS removes the app's protection; this is an accepted escape route | Pending |
 | Time-zone / DST transition | Local schedules reconcile; existing budget is not reset just by reopening | Pending |
-| Screen Time report | Combined selected activity appears without being exported to parent storage | Pending |
+| Screen Time report | Selected activity is prominent, total screen time is smaller, and both match current-device Screen Time; data stays inside the extension | Pending |
+| Usage comparison | Total screen time versus the previous seven complete days; decreases green, increases red; no selected-activity comparison | Pending |
+| Dashboard scrolling | Swipes beginning over either usage report scroll normally, and position stays stable through periodic refreshes; no dashboard icon row | Pending |
 
 After the short checks, choose your intended daily blocks (optional) and allowance using the editors at any time. Fresh installations have no prefilled daily blocks and start with a 30-minute allowance. Raising a test allowance to 30 minutes is intentionally queued until the next day. Record a complete normal day, including midnight, before treating the build as verified for daily use.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render matching light/dark Home Screen icons and the original shield crop.
+"""Render sunset icon artwork and use the dark crop for Home Screen icons.
 
 Requires Pillow. Artwork: ascii.rest, MIT; see Shared/AsciiRest-LICENSE.txt.
 """
@@ -32,14 +32,14 @@ shield = ROOT / 'Shared/ShieldArtwork.xcassets/DaywellIcon.imageset'
 app.mkdir(parents=True, exist_ok=True)
 shield.mkdir(parents=True, exist_ok=True)
 dark = render('OceanSunset')
-light = render('OceanSunsetLight')
 save_if_changed(dark, app / 'DaywellIcon.png')
-save_if_changed(light, app / 'DaywellIconLight.png')
 save_if_changed(dark, shield / 'DaywellIcon.png')
 
 base = {'idiom': 'universal', 'platform': 'ios', 'size': '1024x1024'}
 images = [
-    dict(base, filename='DaywellIconLight.png'),
+    # Home Screen appearance is independent of the system's light/dark mode.
+    # Use the requested dark fallback consistently, including older iOS releases.
+    dict(base, filename='DaywellIcon.png'),
     dict(base, filename='DaywellIcon.png', appearances=[{'appearance': 'luminosity', 'value': 'dark'}])
 ]
 (app / 'Contents.json').write_text(json.dumps({'images': images, 'info': INFO}, indent=2) + '\n')
@@ -48,5 +48,4 @@ images = [
 }, indent=2) + '\n')
 for directory in (app.parent, shield.parent):
     (directory / 'Contents.json').write_text(json.dumps({'info': INFO}, indent=2) + '\n')
-print(app / 'DaywellIconLight.png')
 print(app / 'DaywellIcon.png')

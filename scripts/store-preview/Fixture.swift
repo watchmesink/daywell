@@ -1,7 +1,7 @@
 // Simulator-only stand-in for AppModel, used to capture App Store screenshots.
 // The simulator cannot authorize Screen Time or create activity tokens, so this
-// fixture supplies a sample routine and draws category tiles in place of
-// Apple's remotely rendered token labels.
+// fixture supplies a sample routine and usage values, and draws category tiles
+// in the selection editor in place of Apple's remotely rendered token labels.
 import BlockingCore
 import FamilyControls
 import SwiftUI
@@ -18,7 +18,7 @@ final class AppModel: ObservableObject {
         var document = ProtectionDocument()
         document.active.policy = BlockingPolicy(
             categories: [Data([1]), Data([2]), Data([3])],
-            windows: [BlockWindow(startMinute: 7 * 60, endMinute: 10 * 60),
+            windows: [BlockWindow(startMinute: 6 * 60, endMinute: 8 * 60),
                       BlockWindow(startMinute: 21 * 60, endMinute: 0)],
             dailyLimitMinutes: 30)
         self.document = document
@@ -49,10 +49,6 @@ enum MockSelection {
             .overlay(Image(systemName: symbol).font(.system(size: size * 0.48, weight: .semibold)).foregroundStyle(.white))
     }
 
-    static var icons: some View {
-        ForEach(items, id: \.0) { item in tile(item.1, item.2, size: 36) }
-    }
-
     static var rows: some View {
         ForEach(items, id: \.0) { item in
             HStack(spacing: 14) {
@@ -80,5 +76,23 @@ struct StorePreviewApp: App {
                 .environmentObject(model)
                 .tint(Brand.ink)
         }
+    }
+}
+
+// Screenshot-only values. These never read or represent a person's Screen Time.
+enum MockUsage {
+    // Match make-store-captures.sh's status bar and keep the routine deterministic.
+    static let now = Calendar.autoupdatingCurrent.date(bySettingHour: 9, minute: 41, second: 0, of: .now)!
+    static let selected = summary(today: 18 * 60, average: 30 * 60)
+    static let total = summary(today: 205 * 60, average: 164 * 60)
+
+    private static func summary(today duration: TimeInterval, average: TimeInterval) -> UsageStatistics {
+        let calendar = Calendar.autoupdatingCurrent
+        let today = calendar.startOfDay(for: now)
+        var durations = Dictionary(uniqueKeysWithValues: (1...7).map {
+            (calendar.date(byAdding: .day, value: -$0, to: today)!, average)
+        })
+        durations[today] = duration
+        return UsageStatistics(dailyDurations: durations, now: now, calendar: calendar)
     }
 }

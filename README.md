@@ -27,7 +27,7 @@ Real iPhone captures of the dashboard, app selection, and shared allowance.
 - Block selected apps, whole categories, and websites during up to seven daily windows, including overnight schedules.
 - Set one shared daily allowance across all selected apps, categories, and websites.
 - Use scheduled blocks, an allowance, or both.
-- See today’s usage and upcoming rule changes on the dashboard.
+- See today's selected activity, smaller total screen time with its change against the previous seven-day average, and upcoming rule changes on the dashboard.
 - Tighten limits immediately; changes that relax protection wait until the next day after any overnight block.
 - Keep app selections and activity on your device.
 
@@ -44,7 +44,7 @@ New users start with a shared allowance and no daily blocking windows. Add daily
 | Daily blocks | None; add your own schedule |
 | Shared daily allowance | 30 minutes total across all selected activity and sessions |
 
-Scheduled blocks apply to everything selected. Outside those windows, selected app, category, and website activity shares one allowance. For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance; both apps are then blocked. The blocking screen offers **Close** only.
+Scheduled blocks apply to everything selected. Outside those windows, selected app, category, and website activity shares one allowance. For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance; both apps are then blocked. The blocking screen offers only the native button to close the blocked app.
 
 - Edit your selection, daily windows, and the allowance at any time, including during a scheduled block.
 - Overnight and overlapping windows are supported. Each window must span at least 15 minutes.

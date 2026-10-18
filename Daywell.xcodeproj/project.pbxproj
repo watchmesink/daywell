@@ -12,6 +12,7 @@
 		0ECF644A89C6181482638332 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CDC90A2ACFDDACA546D6B09 /* Components.swift */; };
 		104E6B23F7471B9007EDDDE2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B27012E0D424EDF3189D569 /* AppModel.swift */; };
 		10CE2119F597BE22214A994C /* Editors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A2ADA07649B9E4881BA517 /* Editors.swift */; };
+		199658A699B6EEB4FA5559D4 /* BlockingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 939A0F15689E319C0F00FB35 /* BlockingCore */; };
 		23C84A9604F9D5510B28A451 /* AsciiRest-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A8E98BF83A0F0513E763FE6 /* AsciiRest-LICENSE.txt */; };
 		30B48763A0CC667FB9D27349 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 191B8A533662BDC09DAD1BF8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		340C559A42AA9C3BE8E68E9C /* ActivityMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96DD74D8C835D1FA4BC17AE /* ActivityMonitorExtension.swift */; };
@@ -151,6 +152,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				743470560D08433F52151E49 /* BlockingCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D5719A06C30348498D815165 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				199658A699B6EEB4FA5559D4 /* BlockingCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,6 +386,7 @@
 			buildConfigurationList = B3C66750E2B4A3E3CDD8D86C /* Build configuration list for PBXNativeTarget "ActivityReport" */;
 			buildPhases = (
 				B12065412FDBDFC3AE19B3A5 /* Sources */,
+				D5719A06C30348498D815165 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -384,6 +394,7 @@
 			);
 			name = ActivityReport;
 			packageProductDependencies = (
+				939A0F15689E319C0F00FB35 /* BlockingCore */,
 			);
 			productName = ActivityReport;
 			productReference = 0A929CA88CC5024F6F3565EE /* ActivityReport.appex */;
@@ -586,7 +597,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -600,7 +611,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -772,7 +783,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -792,7 +803,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -933,6 +944,10 @@
 			productName = BlockingCore;
 		};
 		661DF01BE6B16E214E61E7A3 /* BlockingCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BlockingCore;
+		};
+		939A0F15689E319C0F00FB35 /* BlockingCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = BlockingCore;
 		};

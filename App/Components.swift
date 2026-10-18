@@ -8,9 +8,9 @@ struct SelectionRows: View {
 
     var body: some View {
         Group {
-            ForEach(Array(selection.applicationTokens), id: \.self) { token in Label(token) }
-            ForEach(Array(selection.categoryTokens), id: \.self) { token in Label(token) }
-            ForEach(Array(selection.webDomainTokens), id: \.self) { token in Label(token) }
+            ForEach(selection.orderedApplicationTokens, id: \.self) { token in Label(token) }
+            ForEach(selection.orderedCategoryTokens, id: \.self) { token in Label(token) }
+            ForEach(selection.orderedWebDomainTokens, id: \.self) { token in Label(token) }
         }
         .labelStyle(.titleAndIcon)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -19,6 +19,26 @@ struct SelectionRows: View {
 }
 
 extension FamilyActivitySelection {
+    var orderedApplicationTokens: [ApplicationToken] { Self.ordered(applicationTokens) }
+    var orderedCategoryTokens: [ActivityCategoryToken] { Self.ordered(categoryTokens) }
+    var orderedWebDomainTokens: [WebDomainToken] { Self.ordered(webDomainTokens) }
+
+    private static func ordered<Token: Encodable & Hashable>(_ tokens: Set<Token>) -> [Token] {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        do {
+            // Decoding a selection creates fresh Sets with a new iteration order.
+            // Sort by the opaque token's persisted bytes, encoding only once per token.
+            return try tokens.map { (token: $0, key: try encoder.encode($0)) }
+                .sorted { $0.key.lexicographicallyPrecedes($1.key) }
+                .map(\.token)
+        } catch {
+            // Keep every selected item visible if a future token cannot be encoded.
+            ProtectionEnvironment.logger.error("Cannot order selected tokens; displaying all selected items.")
+            return Array(tokens)
+        }
+    }
+
     var summary: String {
         let counts = [(applicationTokens.count, "app", "apps"),
                       (categoryTokens.count, "category", "categories"),

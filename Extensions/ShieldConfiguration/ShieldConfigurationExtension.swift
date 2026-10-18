@@ -38,8 +38,10 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             icon: Self.icon,
             title: .init(text: "\(name) can wait.", color: .label),
             subtitle: .init(text: explanation + "\n\nTime for something else.", color: .secondaryLabel),
-            primaryButtonLabel: .init(text: "Close", color: .white),
-            primaryButtonBackgroundColor: .systemBlue,
+            // A nil label and fill let the shield host choose its native button
+            // colors together, including dark mode and accessibility contrast.
+            primaryButtonLabel: nil,
+            primaryButtonBackgroundColor: nil,
             secondaryButtonLabel: nil)
     }
 

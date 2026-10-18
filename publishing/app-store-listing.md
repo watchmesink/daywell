@@ -11,7 +11,7 @@
 | Price | Free ($0.00), saved in App Store Connect for all 175 territories on October 9, 2026. |
 | Age rating | Apple-calculated 9+ in 172 regions, with country-specific ratings elsewhere |
 | Copyright | 2026 Daywell contributors |
-| Version | 1.1 (5), resubmitted October 15, 2026 at 09:08 UTC; Waiting for Review |
+| Version | 1.1.1 (8), prepared October 18, 2026; release after App Review approval |
 | Minimum OS | iOS 17.4 |
 | Keywords | focus,distraction,doomscrolling,social media,limit,schedule,routine,wellbeing,habit,productivity (96/100; avoids repeating name and subtitle words) |
 | Privacy Policy URL | https://daywell-support.tunedtoast2.chatgpt.site/privacy.html |
@@ -42,16 +42,16 @@ FREE, WITH NOTHING TO UNLOCK
 
 BUILT TO HOLD
 • Tightening a limit applies immediately. Loosening one waits until the next day, so a weak moment can’t undo your plan.
-• When a block is active, iOS shows a blocking screen with a Close button and no skip option.
+• When a block is active, iOS shows a blocking screen with a native button to close the app and no skip option.
 
 Daywell requires Screen Time access on iOS 17.4 or later. You can turn it off in Settings or uninstall the app at any time. iOS controls Screen Time callbacks, so activity updates and blocking can be delayed.
 
-## What’s New in 1.1
+## What’s New in 1.1.1
 
-• Block whole categories and websites, not just individual apps.
-• New light theme with a pastel sunset, and a matching light Home Screen icon on iOS 18.
-• An animated ocean sunset on the dashboard and onboarding.
-• Refreshed launch screen and clearer rule editors.
+• Corrected today's usage to show time in your selected apps, categories, and websites.
+• Added total screen time with a comparison to your previous seven-day average.
+• Improved dashboard scrolling and simplified the blocked-activity card.
+• Restored native blocking-screen button colors and a consistent dark app icon.
 
 ## Screenshots
 
@@ -66,7 +66,7 @@ Six slides in `publishing/screenshots/`, alternating light and dark appearance, 
 | 5 | Privacy | Private by default. | Selection editor, dark |
 | 6 | Your routine | Your time. Your routine. | Allowance editor, dark |
 
-To regenerate: `bash scripts/make-store-captures.sh` renders the real app views on the iPhone 17 Pro simulator into `build/store-captures/`, then `python3 scripts/make-store-screenshots.py` composes the slides. The simulator can’t authorize Screen Time or create activity tokens, so `scripts/store-preview/Fixture.swift` supplies a sample routine and draws Social, Entertainment, and Games tiles where iOS would render the selected items. The status bar is fixed at 09:41.
+To regenerate: `bash scripts/make-store-captures.sh` renders the real app views on the iPhone 17 Pro simulator into `build/store-captures/`, then `python3 scripts/make-store-screenshots.py` composes the slides. The simulator can’t authorize Screen Time or create activity tokens, so `scripts/store-preview/Fixture.swift` supplies a sample routine and usage values, plus Social, Entertainment, and Games tiles in the selection editor. The capture script reuses the production report views. The status bar and sample routine are fixed at 09:41.
 
 ## Information to enter in App Store Connect
 

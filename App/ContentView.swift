@@ -5,8 +5,11 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel
+    @Environment(\.scenePhase) private var scenePhase
     @State private var sheet: EditorSheet?
-    @State private var isScrolledDown = false
+    @State private var usageDay = Calendar.autoupdatingCurrent.startOfDay(for: .now)
+    @ScaledMetric(relativeTo: .body) private var selectedUsageHeight = 76
+    @ScaledMetric(relativeTo: .caption) private var totalUsageHeight = 48
 
     var body: some View {
         NavigationStack {
@@ -30,23 +33,17 @@ struct ContentView: View {
                 }
                 .padding(.vertical, 24)
                 .frame(maxWidth: .infinity)
-                .onGeometryChange(for: Bool.self) { geometry in
-                    geometry.frame(in: .named("main-scroll")).minY < -8
-                } action: { isScrolledDown = $0 }
             }
-            .coordinateSpace(name: "main-scroll")
             .ignoresSafeArea(.container, edges: .horizontal)
             .background(Brand.background)
-            .navigationTitle("Daywell")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Daywell").font(.headline)
-                        .opacity(isScrolledDown ? 0 : 1)
-                        .accessibilityHidden(isScrolledDown)
-                }
-            }
+            .toolbar(.hidden, for: .navigationBar)
             .refreshable { await model.refresh() }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { refreshUsageDay() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                refreshUsageDay()
+            }
             .sheet(item: $sheet) { editor in
                 switch editor {
                 case .application: ApplicationEditor()
@@ -116,49 +113,24 @@ struct ContentView: View {
                     }
                 }
             }
-            TimelineView(.periodic(from: .now, by: 15)) { context in
-                let decision = model.snapshot.decision(at: context.date, calendar: .autoupdatingCurrent)
-                VStack(alignment: .leading, spacing: 22) {
-                    statusCard(decision)
-                    inset { appCard() }
-                    inset { rulesCard() }
-                }
-            }
+            statusCard
+            inset { appCard() }
+            inset { rulesCard() }
         }
     }
 
-    private func statusCard(_ decision: ShieldDecision) -> some View {
+    private var statusCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             OceanSunsetBackdrop()
             inset {
                 VStack(alignment: .leading, spacing: 18) {
-                    HStack {
-                        Label(model.authorized ? (decision.isBlocked ? "BLOCK ACTIVE" : model.hasRules ? "TIME AVAILABLE" : "NO RULES SET") : "ACCESS NEEDED",
-                              systemImage: model.authorized ? (decision.isBlocked ? "lock.fill" : "checkmark.circle.fill") : "exclamationmark.circle")
-                            .font(.system(.caption, design: .rounded, weight: .bold)).tracking(1)
-                        Spacer()
-                        Image(systemName: "sun.horizon").font(.title2)
+                    // Time updates affect the status copy, not remote reports or cards.
+                    TimelineView(.periodic(from: .now, by: 15)) { context in
+                        statusSummary(model.snapshot.decision(at: context.date, calendar: .autoupdatingCurrent))
                     }
-                    Text(!model.authorized ? "Reconnect\nto your routine." : decision.isBlocked ? "A moment\naway from the screen." : model.hasRules ? "Enjoy your time.\nKeep your limits." : "Make room\nfor your day.")
-                        .font(.system(size: 34, weight: .semibold, design: .rounded)).tracking(-1)
-                    if decision.budgetExhausted {
-                        Text(ProtectionCopy.allowanceUsed).font(.subheadline)
-                    } else if let next = decision.nextScheduleTransition {
-                        Text(decision.scheduled ? "Scheduled block ends at \(next, style: .time)." : "Next scheduled block at \(next, style: .time).")
-                            .font(.subheadline)
-                    } else {
-                        Text(decision.scheduled ? "Your overlapping schedules cover the whole day." : model.hasRules ? "Your daily allowance keeps you on track." : "Add a rule below to start protecting your time.")
-                            .font(.subheadline)
-                    }
-                    if model.authorized, model.snapshot.policy.dailyLimitMinutes != nil, !decision.budgetExhausted,
-                       let selection = model.selection, !selection.isEmpty {
+                    if model.authorized, let selection = model.selection, !selection.isEmpty {
                         Divider().overlay(Color.primary.opacity(0.25))
-                        DeviceActivityReport(.daywellToday, filter: DeviceActivityFilter(
-                            segment: .daily(during: Calendar.current.dateInterval(of: .day, for: .now)!),
-                            applications: selection.applicationTokens, categories: selection.categoryTokens,
-                            webDomains: selection.webDomainTokens))
-                            .frame(height: 88)
-                            .id(model.snapshot.generation)
+                        usageReports(selection: selection)
                     }
                 }
                 .foregroundStyle(.primary)
@@ -167,6 +139,25 @@ struct ContentView: View {
             .padding(.top, -24)
         }
         .accessibilityIdentifier("protection-status")
+    }
+
+    private func statusSummary(_ decision: ShieldDecision) -> some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Label(model.authorized ? (decision.isBlocked ? "BLOCK ACTIVE" : model.hasRules ? "TIME AVAILABLE" : "NO RULES SET") : "ACCESS NEEDED",
+                  systemImage: model.authorized ? (decision.isBlocked ? "lock.fill" : "checkmark.circle.fill") : "exclamationmark.circle")
+                .font(.system(.caption, design: .rounded, weight: .bold)).tracking(1)
+            Text(!model.authorized ? "Reconnect\nto your routine." : decision.isBlocked ? "A moment\naway from the screen." : model.hasRules ? "Enjoy your time.\nKeep your limits." : "Make room\nfor your day.")
+                .font(.system(size: 34, weight: .semibold, design: .rounded)).tracking(-1)
+            if decision.budgetExhausted {
+                Text(ProtectionCopy.allowanceUsed).font(.subheadline)
+            } else if let next = decision.nextScheduleTransition {
+                Text(decision.scheduled ? "Scheduled block ends at \(next, style: .time)." : "Next scheduled block at \(next, style: .time).")
+                    .font(.subheadline)
+            } else {
+                Text(decision.scheduled ? "Your overlapping schedules cover the whole day." : model.hasRules ? "Your daily allowance keeps you on track." : "Add a rule below to start protecting your time.")
+                    .font(.subheadline)
+            }
+        }
     }
 
     private func appCard() -> some View {
@@ -180,23 +171,39 @@ struct ContentView: View {
                 }
                 if let selection = model.selection {
                     Text(selection.summary).font(.caption).foregroundStyle(.secondary)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            Group {
-                                ForEach(Array(selection.applicationTokens), id: \.self) { token in Label(token) }
-                                ForEach(Array(selection.categoryTokens), id: \.self) { token in Label(token) }
-                                ForEach(Array(selection.webDomainTokens), id: \.self) { token in Label(token) }
-                            }
-                            .labelStyle(.iconOnly)
-                            .frame(width: 36, height: 36)
-                        }
-                    }
-                    .frame(height: 36)
                 } else {
                     Label("Selected activity unavailable", systemImage: "exclamationmark.triangle")
                 }
             }
         }
+    }
+
+    private func usageReports(selection: FamilyActivitySelection) -> some View {
+        let calendar = Calendar.autoupdatingCurrent
+        let today = usageDay
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
+        let interval = DateInterval(
+            start: calendar.date(byAdding: .day, value: -7, to: today)!,
+            end: tomorrow)
+
+        return VStack(alignment: .leading, spacing: 4) {
+            DeviceActivityReport(.daywellToday, filter: DeviceActivityFilter(
+                segment: .daily(during: DateInterval(start: today, end: tomorrow)),
+                applications: selection.applicationTokens, categories: selection.categoryTokens,
+                webDomains: selection.webDomainTokens))
+                .frame(height: selectedUsageHeight)
+            DeviceActivityReport(.daywellTotalToday, filter: DeviceActivityFilter(
+                segment: .daily(during: interval)))
+                .frame(height: totalUsageHeight)
+        }
+        // Read-only extension hosts must not capture swipes from the dashboard.
+        .allowsHitTesting(false)
+        .id(model.snapshot.generation)
+    }
+
+    private func refreshUsageDay() {
+        let today = Calendar.autoupdatingCurrent.startOfDay(for: .now)
+        if usageDay != today { usageDay = today }
     }
 
     private func rulesCard() -> some View {
