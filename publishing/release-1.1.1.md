@@ -22,4 +22,8 @@ Native shield rendering and scrolling with Apple's live report process have not 
 
 ## Release status
 
-The new version is configured to release automatically after App Review approval. Upload and submission verification are in progress.
+Version **1.1.1 (8)** uploaded successfully and processed as **VALID**. It was submitted at **15:23:20 UTC (17:23 Berlin time) on October 18, 2026**. Both the submission and version read back as **WAITING_FOR_REVIEW**. It will release automatically after approval; version 1.1 remains live until then.
+
+- [Review submission](https://appstoreconnect.apple.com/apps/6820666833/distribution/reviewsubmissions/details/75437723-d37b-4f59-8422-fb03716ba375)
+- [Verified submission and screenshot metadata](evidence/release-1.1.1-submission.json)
+- [PR #3](https://github.com/watchmesink/daywell/pull/3), source commit `3d5ec37`
