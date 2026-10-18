@@ -19,8 +19,10 @@ final class AppModel: ObservableObject {
     init() {
         authorizationObservation = AuthorizationCenter.shared.$authorizationStatus.sink { [weak self] status in
             Task { @MainActor in
-                self?.authorized = status == .approved
-                await self?.refresh()
+                guard let self else { return }
+                let approved = status == .approved
+                if self.authorized != approved { self.authorized = approved }
+                await self.refresh()
             }
         }
     }
@@ -51,8 +53,13 @@ final class AppModel: ObservableObject {
         guard !working, !refreshing else { return }
         refreshing = true
         let revision = editRevision
-        defer { refreshing = false; refreshTask = nil; hasLoaded = true }
-        authorized = AuthorizationCenter.shared.authorizationStatus == .approved
+        defer {
+            refreshing = false
+            refreshTask = nil
+            if !hasLoaded { hasLoaded = true }
+        }
+        let approved = AuthorizationCenter.shared.authorizationStatus == .approved
+        if authorized != approved { authorized = approved }
         let mayReconcile = authorized && reconcileMonitors
         do {
             let task = Task.detached(priority: .userInitiated) { () throws -> (ProtectionDocument, String?) in
@@ -75,10 +82,14 @@ final class AppModel: ObservableObject {
             let result = try await task.value
             // A background read must not overwrite a newer edit or disable its UI.
             guard revision == editRevision, !working else { return }
-            document = result.0
-            if reconcileMonitors || result.1 != nil { error = result.1 }
+            // Polling unchanged storage must not invalidate the dashboard while
+            // scrolling or rebuild its embedded Screen Time reports.
+            if document != result.0 { document = result.0 }
+            if (reconcileMonitors || result.1 != nil), error != result.1 { error = result.1 }
         } catch {
-            if revision == editRevision, !working { self.error = error.localizedDescription }
+            if revision == editRevision, !working, self.error != error.localizedDescription {
+                self.error = error.localizedDescription
+            }
         }
     }
 

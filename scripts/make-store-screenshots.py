@@ -39,7 +39,7 @@ SLIDES = [
      'Minutes add up across everything you pick. Then it\u2019s all blocked until tomorrow.'),
     ('04-simple', 'dashboard-light.png',
      'Simple\nby design.',
-     'One screen shows what\u2019s blocked, when, and how much time is left.'),
+     'One screen shows what\u2019s blocked, when, and today\u2019s usage.'),
     ('05-private', 'apps-dark.png',
      'Private\nby default.',
      'Daywell never sees which apps you chose. Your rules stay on your iPhone.'),

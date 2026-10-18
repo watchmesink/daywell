@@ -1,0 +1,93 @@
+{
+  "checkedAt": "2026-10-18T15:23:22.704108+00:00",
+  "appId": "6820666833",
+  "version": "1.1.1",
+  "build": "8",
+  "versionId": "af9fbffc-0790-41f6-9c1b-72f47a21e80a",
+  "buildId": "65fccd85-9e53-486c-b0f8-a4eabfae31f1",
+  "buildProcessingState": "VALID",
+  "usesNonExemptEncryption": false,
+  "releaseType": "AFTER_APPROVAL",
+  "versionState": "WAITING_FOR_REVIEW",
+  "submissionId": "75437723-d37b-4f59-8422-fb03716ba375",
+  "submissionState": "WAITING_FOR_REVIEW",
+  "submittedDate": "2026-10-18T15:23:20.275Z",
+  "whatsNew": "\u2022 Corrected today's usage to show time in your selected apps, categories, and websites.\n\u2022 Added total screen time with a comparison to your previous seven-day average.\n\u2022 Improved dashboard scrolling and simplified the blocked-activity card.\n\u2022 Restored native blocking-screen button colors and a consistent dark app icon.",
+  "reviewContactVerified": true,
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "01-choose-apps.png",
+      "checksum": "02e77b418a0be484f57d66f79533ab7b",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "02-no-account.png",
+      "checksum": "715584df8a92093e389b7a363c3d847f",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "03-shared-allowance.png",
+      "checksum": "197e3bd770c23d328505d11c68efa6ab",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "04-simple.png",
+      "checksum": "1a8509ea948befa733301cf7e8f3df46",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "05-private.png",
+      "checksum": "fde5ad4e288c4b5471102e60a53f3fbe",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "06-your-routine.png",
+      "checksum": "4a7b4b05fb4942d2f1f5e5199c4d46ba",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "01-choose-apps.png",
+      "checksum": "b2a107e06bc542532e689ba6ef128eec",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "02-no-account.png",
+      "checksum": "f70e299d1f9b133ddd875dfbeda3de43",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "03-shared-allowance.png",
+      "checksum": "e85fe46235af5ce73984ddceb1ed1606",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "04-simple.png",
+      "checksum": "2c57336e4393cea0365f3057eab2a053",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "05-private.png",
+      "checksum": "7522891cc879f7328298d025b453a334",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "06-your-routine.png",
+      "checksum": "0aea2a7e42eb1131993696caeb3ac8a2",
+      "state": "COMPLETE"
+    }
+  ],
+  "pullRequest": "https://github.com/watchmesink/daywell/pull/3",
+  "sourceCommit": "3d5ec37"
+}
