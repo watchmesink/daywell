@@ -6,106 +6,62 @@
 
 **Make room for your day.**
 
-Daywell is a free, open-source iPhone app that helps you spend less time doomscrolling. Choose distracting apps such as Instagram, TikTok, or X, whole categories, or websites, set daily blocking windows and a shared time allowance, and let Apple’s Screen Time APIs enforce your routine.
+Daywell is a free, open-source iPhone app that helps you spend less time doomscrolling. Choose the apps, categories, or websites that distract you, then set a blocking schedule, a shared daily allowance, or both.
 
-No subscription, account, analytics, advertising, or server. Built with SwiftUI for iOS 17.4 and later.
+Your selections and activity stay on your device. No account, subscription, ads, or analytics. Built with SwiftUI for iOS 17.4 and later.
 
-[Support](https://daywell-support.tunedtoast2.chatgpt.site/support.html) · [Privacy](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html) · [Report an issue](https://github.com/watchmesink/daywell/issues)
+[Get it on the App Store](https://apps.apple.com/app/id6820666833) · [Support](https://daywell-support.tunedtoast2.chatgpt.site/support.html) · [Privacy](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html) · [Report an issue](https://github.com/watchmesink/daywell/issues)
 
 ## Screenshots
 
-Real iPhone captures of the dashboard, app selection, and shared allowance.
+Dashboard, activity selection, and shared allowance. Simulator captures with sample data, in light and dark mode.
 
 <p>
-  <img src="docs/screenshots/dashboard.png" alt="Daywell dashboard with daily blocks and shared allowance" width="250">
-  <img src="docs/screenshots/selected-apps.png" alt="Choose apps to include in your Daywell routine" width="250">
-  <img src="docs/screenshots/shared-allowance.png" alt="Set a shared daily allowance for selected apps" width="250">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark.png">
+    <img src="docs/screenshots/dashboard.png" alt="Dashboard with selected activity, total screen time, and daily blocks" width="250">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/selected-apps-dark.png">
+    <img src="docs/screenshots/selected-apps.png" alt="Choose apps, categories, and websites; three sample categories selected" width="250">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/shared-allowance-dark.png">
+    <img src="docs/screenshots/shared-allowance.png" alt="Shared daily allowance set to 30 minutes" width="250">
+  </picture>
 </p>
 
-## Features
+## How it works
 
-- Block selected apps, whole categories, and websites during up to seven daily windows, including overnight schedules.
-- Set one shared daily allowance across all selected apps, categories, and websites.
-- Use scheduled blocks, an allowance, or both.
-- See today's selected activity, smaller total screen time with its change against the previous seven-day average, and upcoming rule changes on the dashboard.
-- Tighten limits immediately; changes that relax protection wait until the next day after any overnight block.
-- Keep app selections and activity on your device.
+Grant Screen Time access, choose what to block in Apple's private picker, and activate your routine. New users start with a 30-minute shared allowance and no scheduled blocks.
 
-Daywell uses original code and design, built with SwiftUI and Apple's Screen Time APIs. The source and app icon are [MIT licensed](LICENSE).
+- Add up to seven daily blocking windows, including overnight schedules.
+- Share one daily allowance across your selected apps, categories, and websites outside those windows.
+- See today's selected activity alongside total screen time and its change against the previous seven-day average.
+- Tighten limits immediately. Changes that relax protection wait until the next day, after any overnight block ends. You can review or cancel them under Upcoming changes.
 
-The ocean-sunset artwork is adapted from [ascii.rest](https://ascii.rest/ocean-sunset/) by bas3line under its MIT license; see [artwork attribution](docs/ARTWORK.md).
+For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance. Both apps are then blocked for the rest of the day.
 
-## Your starting routine
+Daywell relies on iOS for blocking and usage reports, so updates can be delayed. Uninstalling the app or revoking Screen Time access removes protection. See [architecture and limitations](docs/ARCHITECTURE.md) for the details.
 
-New users start with a shared allowance and no daily blocking windows. Add daily blocks if you want them, choose apps, categories, or websites in Apple's private Screen Time picker, then activate. Website-only and category-only selections also work:
+## Build and test
 
-| Rule | Default |
-| --- | --- |
-| Daily blocks | None; add your own schedule |
-| Shared daily allowance | 30 minutes total across all selected activity and sessions |
+For a personal build, you need macOS, Xcode, a paid Apple Developer membership with Family Controls access, and an iPhone running iOS 17.4 or later. There are no third-party runtime dependencies.
 
-Scheduled blocks apply to everything selected. Outside those windows, selected app, category, and website activity shares one allowance. For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance; both apps are then blocked. The blocking screen offers only the native button to close the blocked app.
+1. Copy `Config/Local.xcconfig.example` to `Config/Local.xcconfig` and set your Team ID, bundle prefix, and App Group. This file is ignored by Git.
+2. Open `Daywell.xcodeproj`, select the **Daywell** scheme, and choose your connected iPhone.
+3. Configure signing, Family Controls, and the shared App Group for the app and its four extensions, following the [signing guide](docs/SIGNING.md). Build and run.
 
-- Edit your selection, daily windows, and the allowance at any time, including during a scheduled block.
-- Overnight and overlapping windows are supported. Each window must span at least 15 minutes.
-- Schedule edits that retain all existing blocked minutes apply immediately. Edits that free blocked time are saved for the next day, after any occurrence spanning midnight ends.
-- Use daily blocks, a shared daily allowance, or both. The combined rules card shows only configured rules, with controls to add missing ones.
-- Allowance reductions apply immediately. Once protection is active, increases or removal take effect at the next budget reset and appear under Upcoming changes. Draft rules can be removed immediately before activation.
-- Adding apps, categories, or websites applies immediately without resetting the shared allowance. Removals take effect the next day, after any occurrence spanning midnight ends. Mixed replacements add now and remove later. Upcoming changes shows the target rules and selection, effective dates, and a cancel action; editors reopen with the queued values.
-- Today's use includes earlier activity reported by iOS, including activity before initial setup or a monitoring repair.
-- Any installed apps can be selected, including Instagram, TikTok, X, and Threads. Up to seven windows leave enough iOS monitor slots to register a replacement before retiring the previous configuration.
-
-**Platform boundary:** the device owner can bypass protection by uninstalling Daywell or revoking Screen Time access in Settings. App signing must remain valid. iOS controls delivery of monitoring callbacks; blocking and usage reporting can be delayed. This is not an unbreakable device-management lock.
-
-## Build and install
-
-Requires macOS, Xcode with an iOS SDK, and iOS **17.4 or later**. The project has no third-party runtime dependencies. Development has been checked with Xcode 26.6 and XcodeGen 2.45.4.
-
-1. Copy `Config/Local.xcconfig.example` to `Config/Local.xcconfig`.
-2. Set your Apple Developer **Team ID**, a unique bundle prefix, and a matching App Group. The local file is ignored by Git.
-3. Open `Daywell.xcodeproj`, select the **Daywell** scheme and your connected iPhone.
-4. Confirm automatic signing, Family Controls, and the shared App Group on the app and extensions. See [the signing guide](docs/SIGNING.md).
-5. Build and run. Grant Screen Time access, select the apps, categories, or websites you want to block, review your rules, then activate protection.
-
-The checked-in Xcode project can be opened directly. After changing targets or adding source files, regenerate it from `project.yml`:
+Run the rule tests and compile the app and extensions for the simulator:
 
 ```sh
-xcodegen generate
+bash scripts/check.sh
 ```
 
-The simulator is useful for inspecting the interface. It cannot establish that Screen Time enforcement works on a real iPhone. Follow the [device validation checklist](docs/DEVICE_VALIDATION.md) before relying on the app.
+Use `swift test` for just the portable tests. The Xcode project is checked in; run `xcodegen generate` after changing targets or adding source files.
 
-## Tests and builds
+The simulator is useful for interface checks. Verify Screen Time enforcement on a physical iPhone using the [device checklist](docs/DEVICE_VALIDATION.md). [Validation results](docs/VALIDATION.md) and the [App Store release kit](publishing/README.md) cover testing and distribution in more detail.
 
-Run the portable rule, persistence, and monitor coordination tests:
+## License
 
-```sh
-swift test
-```
-
-Compile the app and all four extensions without signing:
-
-```sh
-xcodebuild -project Daywell.xcodeproj -scheme Daywell \
-  -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
-```
-
-`bash scripts/check.sh` runs the tests and simulator build together. [Validation results](docs/VALIDATION.md) distinguish completed checks from pending physical-device checks.
-
-## Project layout
-
-| Location | Responsibility |
-| --- | --- |
-| `App/` | SwiftUI setup, dashboard, rule editors, and app icon |
-| `Sources/BlockingCore/` | Calendar rules, pending edits, persistence, transactional monitor replacement |
-| `Shared/` | Apple's Screen Time adapter and shared report context |
-| `Extensions/` | Device activity monitor, shield appearance, close-only shield action, usage report |
-| `Tests/BlockingCoreTests/` | Tests using a controlled clock and fake monitor driver |
-| `Config/` | Build settings, generated Info plists, and entitlements |
-
-See [architecture and limitations](docs/ARCHITECTURE.md) for scheduling, recovery, privacy, and time-zone behavior.
-
-## Publishing
-
-The [App Store release kit](publishing/README.md) contains Family Controls distribution setup, listing copy, review notes, and release status. Version 1.0 (2) was submitted to App Review on October 9, 2026.
+The source and app icon are [MIT licensed](LICENSE). The ocean-sunset artwork is adapted from [ascii.rest](https://ascii.rest/ocean-sunset/) by bas3line under the MIT license; see [artwork attribution](docs/ARTWORK.md).
