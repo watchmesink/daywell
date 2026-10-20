@@ -6,9 +6,9 @@
 
 **Make room for your day.**
 
-Daywell is a free, open-source iPhone app that helps you spend less time doomscrolling. Choose the apps, categories, or websites that distract you, then set a blocking schedule, a shared daily allowance, or both.
+Daywell is a free, open-source iPhone app for spending less time doomscrolling. Pick the apps, categories, or websites you want to limit. Block them at set times, give them a shared daily allowance, or use both.
 
-Your selections and activity stay on your device. No account, subscription, ads, or analytics. Built with SwiftUI for iOS 17.4 and later.
+Your selections and activity stay on your device. No account, subscription, ads, or analytics. Requires iOS 17.4 or later.
 
 [Get it on the App Store](https://apps.apple.com/app/id6820666833) · [Support](https://daywell-support.tunedtoast2.chatgpt.site/support.html) · [Privacy](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html) · [Report an issue](https://github.com/watchmesink/daywell/issues)
 
@@ -33,26 +33,27 @@ Dashboard, activity selection, and shared allowance. Simulator captures with sam
 
 ## How it works
 
-Grant Screen Time access, choose what to block in Apple's private picker, and activate your routine. New users start with a 30-minute shared allowance and no scheduled blocks.
+Give Daywell Screen Time access and use Apple's picker to choose what to block. You start with a 30-minute shared allowance and no scheduled blocks. Adjust those rules before you activate protection.
 
 - Add up to seven daily blocking windows, including overnight schedules.
 - Share one daily allowance across your selected apps, categories, and websites outside those windows.
-- See today's selected activity alongside total screen time and its change against the previous seven-day average.
-- Tighten limits immediately. Changes that relax protection wait until the next day, after any overnight block ends. You can review or cancel them under Upcoming changes.
+- See how much time you've spent on your selection today. Total screen time appears below, with a comparison to your previous seven-day average.
 
 For example, 10 minutes in TikTok and 20 minutes in X use the full 30-minute allowance. Both apps are then blocked for the rest of the day.
 
-Daywell relies on iOS for blocking and usage reports, so updates can be delayed. Uninstalling the app or revoking Screen Time access removes protection. See [architecture and limitations](docs/ARCHITECTURE.md) for the details.
+Stricter limits take effect right away. Changes that give you more time take effect the next day, after any overnight block ends. Review or cancel them under Upcoming changes.
+
+iOS can delay blocking and usage reports. You can remove protection by uninstalling Daywell or turning off its Screen Time access. See [architecture and limitations](docs/ARCHITECTURE.md) for details.
 
 ## Build and test
 
-For a personal build, you need macOS, Xcode, a paid Apple Developer membership with Family Controls access, and an iPhone running iOS 17.4 or later. There are no third-party runtime dependencies.
+To build Daywell yourself, you need macOS, Xcode, a paid Apple Developer membership with Family Controls access, and an iPhone running iOS 17.4 or later. The app uses SwiftUI and has no third-party runtime dependencies.
 
 1. Copy `Config/Local.xcconfig.example` to `Config/Local.xcconfig` and set your Team ID, bundle prefix, and App Group. This file is ignored by Git.
 2. Open `Daywell.xcodeproj`, select the **Daywell** scheme, and choose your connected iPhone.
 3. Configure signing, Family Controls, and the shared App Group for the app and its four extensions, following the [signing guide](docs/SIGNING.md). Build and run.
 
-Run the rule tests and compile the app and extensions for the simulator:
+Run the rule tests and build the app and extensions for the simulator:
 
 ```sh
 bash scripts/check.sh
@@ -60,7 +61,7 @@ bash scripts/check.sh
 
 Use `swift test` for just the portable tests. The Xcode project is checked in; run `xcodegen generate` after changing targets or adding source files.
 
-The simulator is useful for interface checks. Verify Screen Time enforcement on a physical iPhone using the [device checklist](docs/DEVICE_VALIDATION.md). [Validation results](docs/VALIDATION.md) and the [App Store release kit](publishing/README.md) cover testing and distribution in more detail.
+Use the simulator to check the interface and a real iPhone to test blocking with the [device checklist](docs/DEVICE_VALIDATION.md). See [validation results](docs/VALIDATION.md) for completed checks and the [App Store release kit](publishing/README.md) for distribution setup.
 
 ## License
 
