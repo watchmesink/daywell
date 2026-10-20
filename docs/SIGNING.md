@@ -25,7 +25,7 @@ For simulator interface checks, use Xcode's normal simulator signing or `CODE_SI
 
 ## First launch
 
-Grant **individual Screen Time authorization** using the device owner's authentication. Choose one or more apps; categories and websites are outside this version. Review the schedule before activation because choosing apps during a scheduled window activates the block immediately.
+Grant **individual Screen Time authorization** using the device owner's authentication. Choose apps, categories, or websites. Review your rules before activation; if a scheduled block is in progress, selected activity is blocked immediately.
 
 You can edit the initial schedule and allowance before granting permission or selecting an app. Activation still requires authorization. After activation, the shared rule engine enforces the edit restrictions even if a form was left open before a block started.
 
