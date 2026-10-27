@@ -8,11 +8,12 @@ For a short test, add a daily block beginning soon and lasting at least 15 minut
 
 The device owner can revoke Screen Time permission in Settings or uninstall Daywell. The app has no account or in-app purchases. It uses Apple's Family Controls, Device Activity, and Managed Settings frameworks and stores selections and rules only in its local App Group container.
 
-## October 27 update — version 1.1.2 (9)
+## October 27 update — version 1.1.2 (10)
 
 - Improved recovery after interrupted or failed Screen Time monitor updates. Compatible usage-limit callbacks survive recovery without weakening saved rules or incorrectly exhausting an earlier policy.
 - The dashboard reconciles schedule and daily-reset protection while it remains open, and reset messages show the actual local reset time after travel.
 - Added **Share problem** at the bottom of setup and the dashboard. It opens a form and then Apple's native share sheet with a diagnostic JSON attachment. The user chooses a recipient or cancels; there is no automatic upload, analytics service, or app server.
 - Automatic diagnostics include recent blocking events, rule settings, app/iOS versions, and selection counts. They exclude selected app/website identities, selection tokens, browsing history, and exact Screen Time usage measurements. Anything the user types into the form is included. The public privacy policy describes this optional sharing.
+- The report form prominently displays device uptime before sharing. The app and all extensions include privacy manifests declaring the optional-bug-report uptime reason (3D61.1) and metadata access to files in their own containers (C617.1).
 - Family Controls and the shared App Group remain enabled on the app and all four extensions. Exact usage measurements stay within Apple's report extension.
 - The previously approved neutral **Continue** permission buttons and screenshot wording without pricing references are retained.

@@ -10,6 +10,7 @@ struct ShareProblemView: View {
     @State private var preparing = false
     @State private var error: String?
     @State private var attachment: ProblemAttachment?
+    @State private var uptimeSeconds = ProcessInfo.processInfo.systemUptime
 
     var body: some View {
         NavigationStack {
@@ -35,6 +36,16 @@ struct ShareProblemView: View {
                     Text("Selected activity shown (optional)")
                 } footer: {
                     Text("Enter the value shown on Daywell's dashboard. Apple keeps exact usage measurements private, so they aren't attached automatically.")
+                }
+
+                Section("Device timing included") {
+                    LabeledContent("Time since device restart") {
+                        Text(Duration.seconds(uptimeSeconds).formatted(.units(
+                            allowed: [.hours, .minutes, .seconds], width: .abbreviated)))
+                    }
+                    .accessibilityIdentifier("problem-device-uptime")
+                    Text("Device uptime and the timing of recent blocking events are attached to help investigate this problem.")
+                        .font(.footnote).foregroundStyle(.secondary)
                 }
 
                 Section {
@@ -77,6 +88,7 @@ struct ShareProblemView: View {
         defer { preparing = false }
         let problem = DiagnosticProblem(description: description, occurredAt: occurredAt, selectedUsageShown: selectedUsageShown)
         let environment = ProblemReportExporter.environment()
+        if let value = environment["uptimeSeconds"].flatMap(Double.init) { uptimeSeconds = value }
         do {
             let url = try await Task.detached(priority: .userInitiated) {
                 try ProblemReportExporter.create(problem: problem, environment: environment)

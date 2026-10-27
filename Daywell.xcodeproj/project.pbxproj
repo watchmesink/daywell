@@ -15,6 +15,8 @@
 		199658A699B6EEB4FA5559D4 /* BlockingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 939A0F15689E319C0F00FB35 /* BlockingCore */; };
 		23C84A9604F9D5510B28A451 /* AsciiRest-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A8E98BF83A0F0513E763FE6 /* AsciiRest-LICENSE.txt */; };
 		30B48763A0CC667FB9D27349 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 191B8A533662BDC09DAD1BF8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		31AA75A991CBDEC2121E170B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */; };
+		33C6C51DA42FD9DF1EB7C8B7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */; };
 		340C559A42AA9C3BE8E68E9C /* ActivityMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96DD74D8C835D1FA4BC17AE /* ActivityMonitorExtension.swift */; };
 		4F73F3B9EA5B73E3FBE90786 /* ShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7D7FAA0F25054D53997DDE /* ShieldActionExtension.swift */; };
 		6124F83EA3C39CBDB81B1A75 /* ReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAE67FD5BAFB2E8CCF94E89 /* ReportContext.swift */; };
@@ -26,7 +28,9 @@
 		950743AA21698EAAADAA3AD8 /* BlockingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 661DF01BE6B16E214E61E7A3 /* BlockingCore */; };
 		9A97F1BEEACD4684B2A967D3 /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63CE506C57B6EC8FFC362D84 /* ShieldConfigurationExtension.swift */; };
 		9D8F19E8C5B2D753D87B8CE4 /* ActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CE4D76306026C912287F739E /* ActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9E15DCF72B2FC88578E4E2CB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */; };
 		A5B56AE9F662E0CD98D0B0BA /* ProtectionEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F754848D77F95C94B5BC19 /* ProtectionEnvironment.swift */; };
+		A78A30E22AF4D48C59D31A81 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */; };
 		AD52E67ECA5FDE83461C1805 /* DaywellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A542943072F172A94CDFC0 /* DaywellApp.swift */; };
 		ADA62CE87AA0468E7A090834 /* ShareProblemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24CA0634C37656FE0A9E88 /* ShareProblemView.swift */; };
 		B4226D2ED7EAA1288F79D324 /* ShieldArtwork.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D25D758EA92513F771083A5E /* ShieldArtwork.xcassets */; };
@@ -38,6 +42,7 @@
 		D53364AC4EA3F02C7E219AEE /* ProtectionEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F754848D77F95C94B5BC19 /* ProtectionEnvironment.swift */; };
 		D89D1A28AEE30251069C71EE /* AsciiRest-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1A8E98BF83A0F0513E763FE6 /* AsciiRest-LICENSE.txt */; };
 		D8E8483951BDE7B78DAD5751 /* BlockingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2942DCBE01A05D744831ABEA /* BlockingCore */; };
+		DDCA15521C4EB03C6D5E3486 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */; };
 		DE9B223122005C8889A12E47 /* OceanSunsetLight.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = C24A11618809D9E40A32C909 /* OceanSunsetLight.mp4 */; };
 		DFC3011C3221C75EA54ECD2C /* ActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 0A929CA88CC5024F6F3565EE /* ActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F2D9126D780193A160F8C166 /* BlockingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5BFC4D70F0CB128B08ADE58C /* BlockingCore */; };
@@ -120,6 +125,7 @@
 		64F754848D77F95C94B5BC19 /* ProtectionEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectionEnvironment.swift; sourceTree = "<group>"; };
 		712161100A5956327DE24D35 /* ActivityReportExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportExtension.swift; sourceTree = "<group>"; };
 		7C3394A9BC15BFC3E6BCEDFF /* ShieldConfiguration.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		96AED6643F193D02051C86B6 /* Daywell.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Daywell.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A4704EDF774C681EB3CDEF8F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A65366F54605F2D9AD27598B /* OceanSunsetArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OceanSunsetArtwork.swift; sourceTree = "<group>"; };
@@ -262,6 +268,7 @@
 			children = (
 				3786BC0853BC3CE3B20AD8E7 /* Artwork.xcassets */,
 				1A8E98BF83A0F0513E763FE6 /* AsciiRest-LICENSE.txt */,
+				8E2EB4C3E7DF084F2172D221 /* PrivacyInfo.xcprivacy */,
 				64F754848D77F95C94B5BC19 /* ProtectionEnvironment.swift */,
 				4BAE67FD5BAFB2E8CCF94E89 /* ReportContext.swift */,
 				D25D758EA92513F771083A5E /* ShieldArtwork.xcassets */,
@@ -308,6 +315,7 @@
 			buildConfigurationList = 5E8CACD6B0715C3C5B4FF0F5 /* Build configuration list for PBXNativeTarget "ActivityMonitor" */;
 			buildPhases = (
 				5077F9D2D8B7D0AC69012C41 /* Sources */,
+				ECFA2C3816EC89A0BBC72252 /* Resources */,
 				01A7B60EEA25541E8220488A /* Frameworks */,
 			);
 			buildRules = (
@@ -373,6 +381,7 @@
 			buildConfigurationList = 254954AD9017225897CA9937 /* Build configuration list for PBXNativeTarget "ShieldAction" */;
 			buildPhases = (
 				B69D03029AD7DB4E046DC6EE /* Sources */,
+				517E5627C1FC2B38B296F7BE /* Resources */,
 				9C5D6420185999030470EF86 /* Frameworks */,
 			);
 			buildRules = (
@@ -392,6 +401,7 @@
 			buildConfigurationList = B3C66750E2B4A3E3CDD8D86C /* Build configuration list for PBXNativeTarget "ActivityReport" */;
 			buildPhases = (
 				B12065412FDBDFC3AE19B3A5 /* Sources */,
+				E285E895CB1ACA59E120D971 /* Resources */,
 				D5719A06C30348498D815165 /* Frameworks */,
 			);
 			buildRules = (
@@ -469,7 +479,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				D89D1A28AEE30251069C71EE /* AsciiRest-LICENSE.txt in Resources */,
+				33C6C51DA42FD9DF1EB7C8B7 /* PrivacyInfo.xcprivacy in Resources */,
 				BA0F3053FC896CE2CE196E56 /* ShieldArtwork.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		517E5627C1FC2B38B296F7BE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				31AA75A991CBDEC2121E170B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,7 +502,24 @@
 				F45581CAE9D7BAC8B6770A70 /* LaunchScreen.storyboard in Resources */,
 				0CA6568647718F65DD97D67B /* OceanSunset.mp4 in Resources */,
 				DE9B223122005C8889A12E47 /* OceanSunsetLight.mp4 in Resources */,
+				DDCA15521C4EB03C6D5E3486 /* PrivacyInfo.xcprivacy in Resources */,
 				B4226D2ED7EAA1288F79D324 /* ShieldArtwork.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E285E895CB1ACA59E120D971 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A78A30E22AF4D48C59D31A81 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECFA2C3816EC89A0BBC72252 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9E15DCF72B2FC88578E4E2CB /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,7 +641,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -791,7 +827,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

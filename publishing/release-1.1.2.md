@@ -1,4 +1,4 @@
-# Daywell 1.1.2 (9)
+# Daywell 1.1.2 (10)
 
 Prepared October 27, 2026, following the released version 1.1.1 (8).
 
@@ -19,6 +19,6 @@ Prepared October 27, 2026, following the released version 1.1.1 (8).
 
 ## Release status
 
-The signed archive and App Store IPA export succeeded. The exact exported IPA passed all signature, provisioning, Family Controls, App Group, version/build, iPhone-only, and ExtensionKit packaging checks across all five bundles. [Sanitized audit](evidence/release-1.1.2-build9-audit.json).
+The initial build 9 upload was accepted. Final release checks identified missing required-reason API declarations in the new diagnostics, so build 10 supersedes that candidate. It adds privacy manifests to all five bundles and a prominent device-uptime disclosure before the user chooses to share a report. Build 9 will not be submitted for App Review.
 
 The updated optional-report privacy policy is live at [the existing privacy URL](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html); [deployment evidence](evidence/release-1.1.2-privacy-deployment.json). App Store processing and submission status will be recorded after Apple accepts the upload.
