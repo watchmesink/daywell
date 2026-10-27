@@ -19,4 +19,6 @@ Prepared October 27, 2026, following the released version 1.1.1 (8).
 
 ## Release status
 
-Release archive, App Store processing, submission, and GitHub PR evidence will be recorded here as each step completes.
+The signed archive and App Store IPA export succeeded. The exact exported IPA passed all signature, provisioning, Family Controls, App Group, version/build, iPhone-only, and ExtensionKit packaging checks across all five bundles. [Sanitized audit](evidence/release-1.1.2-build9-audit.json).
+
+The updated optional-report privacy policy is live at [the existing privacy URL](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html); [deployment evidence](evidence/release-1.1.2-privacy-deployment.json). App Store processing and submission status will be recorded after Apple accepts the upload.
