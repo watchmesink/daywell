@@ -52,6 +52,8 @@ Events capture registration requests/results, callback types and acceptance/reje
 
 **Share problem** is available in setup and the dashboard, including when authorization or state loading fails. It opens a form for the problem's description, time, and optional displayed usage, then the native share sheet with a JSON attachment. Collection reads persisted state and actual registered monitors/shield settings without reconciliation or any rule changes. Partial collection failures appear in the report. Nothing is uploaded automatically. Exported files remain temporarily available for share extensions and are pruned on subsequent exports.
 
+The form prominently displays device uptime before sharing. Every app/extension bundle includes `PrivacyInfo.xcprivacy`, declaring the optional-bug-report uptime reason `3D61.1` and the own-container file-metadata reason `C617.1`. Uptime is shared only after the user chooses to share the specific report, for investigating or responding to that problem. These declarations follow Apple's [required-reason API definitions](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype).
+
 Usage measurements remain inside Apple's report extension; the optional usage field is explicitly entered by the user. Logs begin with an instrumented build and cannot reconstruct earlier incidents. See [the protection audit](PROTECTION_AUDIT.md) for discovered defects, their fixes and remaining limitations, diagnostic signatures, and the standalone verification harness.
 
 ## Time changes and platform limits

@@ -23,4 +23,9 @@ The initial build 9 upload was accepted. Final release checks identified missing
 
 The final build 10 archive and App Store export succeeded. Its exact IPA passed the five-bundle signing, entitlement, profile, version/build, iPhone-only, ExtensionKit, and required-reason privacy-manifest checks. [Final IPA audit](evidence/release-1.1.2-build10-audit.json). The final simulator UI test also verified that uptime is visible before the user opens the native share sheet.
 
-The updated optional-report privacy policy is live at [the existing privacy URL](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html); [deployment evidence](evidence/release-1.1.2-privacy-deployment.json). App Store processing and submission status will be recorded after Apple accepts the upload.
+The updated optional-report privacy policy is live at [the existing privacy URL](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html); [deployment evidence](evidence/release-1.1.2-privacy-deployment.json). Apple accepted final build 10, processed it as **VALID**, and the version was submitted at **16:28:19 UTC (17:28 Berlin time) on October 27, 2026**. Both the version and submission read back as **WAITING_FOR_REVIEW**. Automatic release after approval is selected.
+
+- [App Review submission](https://appstoreconnect.apple.com/apps/6820666833/distribution/reviewsubmissions/details/a80401d2-d923-483f-8019-1f5bce2bd082)
+- [Verified submission evidence](evidence/release-1.1.2-submission.json)
+- [GitHub PR #5](https://github.com/watchmesink/daywell/pull/5)
+- Final implementation commit: `0471de3cde8f36f937975f3e04f0275eb475b919`.
