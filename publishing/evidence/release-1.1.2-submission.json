@@ -1,0 +1,94 @@
+{
+  "checkedAt": "2026-10-27T16:28:22.652677+00:00",
+  "appId": "6820666833",
+  "version": "1.1.2",
+  "build": "10",
+  "versionId": "3a03c755-1f3d-4549-86e4-cb2c9754b186",
+  "buildId": "7e54301b-4d2e-4b1a-9e9c-72d059280fab",
+  "buildProcessingState": "VALID",
+  "usesNonExemptEncryption": false,
+  "releaseType": "AFTER_APPROVAL",
+  "versionState": "WAITING_FOR_REVIEW",
+  "submissionId": "a80401d2-d923-483f-8019-1f5bce2bd082",
+  "submissionState": "WAITING_FOR_REVIEW",
+  "submittedDate": "2026-10-27T16:28:19.497Z",
+  "whatsNew": "\u2022 Improved recovery after interrupted Screen Time updates.\n\u2022 Improved daily-reset and scheduled-block updates while Daywell is open.\n\u2022 Reset messages now show the correct local time after travel.\n\u2022 Added Share problem to share a diagnostic report when something goes wrong.",
+  "reviewContactVerified": true,
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "01-choose-apps.png",
+      "checksum": "b2a107e06bc542532e689ba6ef128eec",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "02-no-account.png",
+      "checksum": "f70e299d1f9b133ddd875dfbeda3de43",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "03-shared-allowance.png",
+      "checksum": "e85fe46235af5ce73984ddceb1ed1606",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "04-simple.png",
+      "checksum": "2c57336e4393cea0365f3057eab2a053",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "05-private.png",
+      "checksum": "7522891cc879f7328298d025b453a334",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_61",
+      "fileName": "06-your-routine.png",
+      "checksum": "0aea2a7e42eb1131993696caeb3ac8a2",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "01-choose-apps.png",
+      "checksum": "02e77b418a0be484f57d66f79533ab7b",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "02-no-account.png",
+      "checksum": "715584df8a92093e389b7a363c3d847f",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "03-shared-allowance.png",
+      "checksum": "197e3bd770c23d328505d11c68efa6ab",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "04-simple.png",
+      "checksum": "1a8509ea948befa733301cf7e8f3df46",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "05-private.png",
+      "checksum": "fde5ad4e288c4b5471102e60a53f3fbe",
+      "state": "COMPLETE"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "fileName": "06-your-routine.png",
+      "checksum": "4a7b4b05fb4942d2f1f5e5199c4d46ba",
+      "state": "COMPLETE"
+    }
+  ],
+  "pullRequest": "https://github.com/watchmesink/daywell/pull/5",
+  "sourceCommit": "0471de3cde8f36f937975f3e04f0275eb475b919",
+  "privacyPolicy": "https://daywell-support.tunedtoast2.chatgpt.site/privacy.html"
+}

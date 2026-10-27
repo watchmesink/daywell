@@ -30,7 +30,7 @@ final class AppModel: ObservableObject {
     var hasSelection: Bool { true }
     var hasRules: Bool { true }
     func authorize() async {}
-    func refresh(reconcileMonitors: Bool = true) async {}
+    func refresh() async {}
     func save(_ edit: RuleEdit) async -> Bool { false }
 }
 

@@ -36,17 +36,32 @@ The app's display name, project, and scheme are Daywell. Bundle IDs, the App Gro
 
 A second, nonblocking operation lock serializes monitor changes. API registration happens outside the state-file lock so a synchronously delivered callback can persist its result without deadlocking. Callbacks do not wait for the operation lock.
 
-A new configuration is staged on disk, all of its monitors register, then it becomes active. Thresholds received while staged are retained; compatible threshold events from the previous generation are merged. Failure removes only the replacement monitors and retains the previous policy and shields. An interrupted staged update is discarded on recovery. Old monitors are retired after successful commit.
+A new configuration is staged on disk, all of its monitors register, then it becomes active. Thresholds received while staged are retained; compatible threshold events from the previous generation are merged. If registration fails or a staged update is interrupted, compatible threshold evidence is merged back into the retained active configuration before the staged snapshot is discarded. Evidence transfers only between identical budget cycles when the receiving policy includes every source target and has an equal or smaller allowance. A failed addition or stricter draft cannot incorrectly exhaust the previous policy.
+
+Old monitors are retired after successful commit. Recovery also removes obsolete owned registrations before another replacement begins, including generations left behind by a crash after commit. Active and unrelated monitors remain registered, and a failed replacement still retains the active policy. This keeps the rolling daily replacement within the activity limit instead of repeatedly failing behind stale generations.
 
 Seven windows leave room for two complete configurations during replacement: each has at most seven window monitors, two budget monitors, and one midnight monitor. Platform registration failures are still handled explicitly.
 
-The 15-second dashboard refresh only reads state and leaves edit controls enabled. Full reconciliation runs on foregrounding and significant time changes. A save awaits any in-flight app refresh; a revision check prevents stale refresh results from replacing the saved UI state.
+The 15-second foreground refresh reconciles protection as well as reading state, providing a fallback for missed schedule/reset callbacks. Unchanged plans do not re-register monitors, and unchanged documents are not published into the dashboard. Report day boundaries also refresh when reconciliation rotates the current cycle. Full reconciliation additionally runs on foregrounding and significant time changes. A save awaits any in-flight app refresh; a revision check prevents stale refresh results from replacing the saved UI state.
+
+## Local diagnostics and problem sharing
+
+The app, monitor, and shield extensions keep a best-effort event journal in the App Group's separate `Diagnostics` directory. Four JSON-lines files rotate at 128 KiB each. A nonblocking advisory lock prevents concurrent writers from interleaving records; callbacks never wait for another diagnostic writer. Interrupted records are isolated and counted when reading. Logging errors never throw into rule enforcement, and diagnostic data is not part of the protection document/schema.
+
+Events capture registration requests/results, callback types and acceptance/rejection, configuration commits/rollbacks, changed state/shield settings, shield presentation/actions, authorization, app lifecycle, time changes, and error domains/codes. Wall-clock timestamps and monotonic uptime help identify an immediately delivered threshold or a clock change. Sanitized snapshots include rules, counts, cycle IDs, deadlines, and pending changes; they omit raw tokens and selected app/website identities.
+
+**Share problem** is available in setup and the dashboard, including when authorization or state loading fails. It opens a form for the problem's description, time, and optional displayed usage, then the native share sheet with a JSON attachment. Collection reads persisted state and actual registered monitors/shield settings without reconciliation or any rule changes. Partial collection failures appear in the report. Nothing is uploaded automatically. Exported files remain temporarily available for share extensions and are pruned on subsequent exports.
+
+The form prominently displays device uptime before sharing. Every app/extension bundle includes `PrivacyInfo.xcprivacy`, declaring the optional-bug-report uptime reason `3D61.1` and the own-container file-metadata reason `C617.1`. Uptime is shared only after the user chooses to share the specific report, for investigating or responding to that problem. These declarations follow Apple's [required-reason API definitions](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype).
+
+Usage measurements remain inside Apple's report extension; the optional usage field is explicitly entered by the user. Logs begin with an instrumented build and cannot reconstruct earlier incidents. See [the protection audit](PROTECTION_AUDIT.md) for discovered defects, their fixes and remaining limitations, diagnostic signatures, and the standalone verification harness.
 
 ## Time changes and platform limits
 
 - Daily intervals use calendar midnights, including 23-hour and 25-hour daylight-saving days.
 - Scheduled windows adopt the device's current time zone when state is reconciled. Launch, foregrounding, significant-time notifications, and extension callbacks trigger reconciliation.
 - An existing budget keeps its original reset instant across a time-zone change. Once that boundary passes, a new local-calendar day is monitored with its earlier usage included. This can temporarily differ from local midnight; the stored reset instant is authoritative.
+- Exhaustion messages in the dashboard and shield use that stored reset instant. They promise midnight only when it is the next midnight in the current calendar and time zone; otherwise they show the local reset date and time.
 - Moving the clock backward does not erase an already-exhausted cycle. This is not protection against all system-time manipulation. Manual time changes, permission revocation, uninstalling, changing/rebuilding the source, and invalid signing are outside the in-app lock boundary.
 - iOS can delay or miss callbacks. Device-level behavior must be measured on the intended OS version, especially after reboot and force-quit. If monitoring cannot be restored, the app reports the error and retains whatever restrictions are already installed; it cannot guarantee new blocks will start without OS callbacks.
 - Rules are stored locally, without cloud synchronization. Apple's own Screen Time “Share Across Devices” setting may affect reported/counted activity.

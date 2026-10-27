@@ -226,6 +226,17 @@ public struct ProtectionSnapshot: Codable, Equatable, Sendable {
             reachedCycles.insert(cycle.id)
         }
     }
+
+    /// A threshold for a subset of our targets and an equal or larger allowance
+    /// also exhausts our policy. The reverse inference is not valid. Only carry
+    /// evidence between the exact same budget cycles, never into another day.
+    public mutating func mergeCompatibleThresholds(from other: ProtectionSnapshot) {
+        guard !other.policy.selection.isEmpty,
+              let limit = policy.dailyLimitMinutes, let otherLimit = other.policy.dailyLimitMinutes,
+              policy.selection.isSuperset(of: other.policy.selection), limit <= otherLimit else { return }
+        let matchingCycles = Set(cycles.filter { other.cycles.contains($0) }.map(\.id))
+        reachedCycles.formUnion(other.reachedCycles.intersection(matchingCycles))
+    }
 }
 
 public enum RuleEdit: Sendable {

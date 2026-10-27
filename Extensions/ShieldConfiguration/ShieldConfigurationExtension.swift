@@ -5,30 +5,33 @@ import UIKit
 
 final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     override func configuration(shielding application: Application) -> ShieldConfiguration {
-        makeConfiguration(name: application.localizedDisplayName ?? "This app")
+        makeConfiguration(name: application.localizedDisplayName ?? "This app", targetKind: "application")
     }
 
     override func configuration(shielding application: Application, in category: ActivityCategory) -> ShieldConfiguration {
-        makeConfiguration(name: application.localizedDisplayName ?? "This app")
+        makeConfiguration(name: application.localizedDisplayName ?? "This app", targetKind: "application_in_category")
     }
 
     override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
-        makeConfiguration(name: webDomain.domain ?? "This website")
+        makeConfiguration(name: webDomain.domain ?? "This website", targetKind: "website")
     }
 
     override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
-        makeConfiguration(name: webDomain.domain ?? "This website")
+        makeConfiguration(name: webDomain.domain ?? "This website", targetKind: "website_in_category")
     }
 
-    private func makeConfiguration(name: String) -> ShieldConfiguration {
+    private func makeConfiguration(name: String, targetKind: String) -> ShieldConfiguration {
         let now = Date()
         let snapshot = try? ProtectionEnvironment.repository().read().active
         let decision = snapshot?.decision(at: now, calendar: .autoupdatingCurrent)
+        // The target's name and token deliberately never enter diagnostic storage.
+        ProtectionEnvironment.record("shield.presented", details: ["targetKind": targetKind,
+            "stateReadable": String(snapshot != nil)], snapshot: snapshot)
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         var explanation = "Your block is active."
         if decision?.budgetExhausted == true {
-            explanation = ProtectionCopy.allowanceUsed
+            explanation = ProtectionCopy.allowanceUsed(resetsAt: decision?.budgetResetsAt, now: now)
         } else if decision?.scheduled == true, let end = decision?.nextScheduleTransition {
             explanation = "Your scheduled block ends at \(formatter.string(from: end))."
         }

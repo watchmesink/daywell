@@ -24,6 +24,7 @@ A simulator build and core tests cannot verify Apple's authorization, callback d
 | End scheduled window with allowance left | Selected activity becomes usable; daily usage is retained | Pending |
 | Split usage across apps, categories, websites, and sessions | Combined usage reaches one shared daily threshold | Pending |
 | Exhaust daily allowance | Every selected target is shielded until budget reset, including after a scheduled block ends | Pending |
+| Share a problem while blocked or with access disabled | Share problem opens; the JSON attachment includes recent callbacks, registration times, rule state, system settings, and versions. Sharing leaves protection unchanged and excludes selection tokens and selected app/website identities from automatic logs | Pending |
 | Increase/remove allowance | Today remains unchanged; pending value or removal applies at reset. Unconfigured rules are omitted from the combined card | Pending |
 | Add/remove an app, category, or website | Additions apply immediately, including during blocks, without resetting exhaustion; removals remain queued until the displayed deadline tomorrow after any occurrence spanning midnight ends. Mixed replacements add now and remove later. Active and upcoming selections are displayed separately | Pending |
 | Shorten, move, or remove schedule | Current windows remain; target windows and date appear under Upcoming changes, survive reopening, and activate at the saved deadline | Pending |
@@ -32,6 +33,8 @@ A simulator build and core tests cannot verify Apple's authorization, callback d
 | Overnight / midnight | Schedule persists across reset; only the exhausted budget layer resets | Pending |
 | Force-quit Daywell | Scheduled and usage callbacks continue to enforce restrictions | Pending |
 | Reboot, then first unlock | Persisted rules and allowance remain; monitor callbacks recover | Pending |
+| Keep dashboard open across a boundary with delayed callbacks | The foreground refresh reconciles schedule/reset protection within its 15-second polling cadence; today's report advances to the new day | Pending |
+| Travel with an exhausted allowance | Dashboard and native shield show the saved reset in the current local time; midnight is promised only when it is the actual next local midnight | Pending |
 | Offline / airplane mode | Rules continue to run locally | Pending |
 | Revoke / restore Screen Time access | App reports lost access; restoration reapplies saved restrictions | Pending |
 | Uninstall | iOS removes the app's protection; this is an accepted escape route | Pending |

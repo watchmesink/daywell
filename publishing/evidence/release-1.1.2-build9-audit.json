@@ -1,0 +1,231 @@
+{
+  "audited_at": "2026-10-27T16:08:44.140239+00:00",
+  "ipa": "Daywell.ipa",
+  "version": "1.1.2",
+  "build": "9",
+  "team": "VA23K94D58",
+  "size_bytes": 19936504,
+  "sha256": "5e273f3ea37a27fe05ee3cbc2b88c796ceaea289b1654abb05c8df241ac08ad8",
+  "bundles": [
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock",
+      "relative_path": ".",
+      "version": "1.1.2",
+      "build": "9",
+      "device_family": [
+        1
+      ],
+      "signed_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "profile_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "signed_team": "VA23K94D58",
+      "profile_teams": [
+        "VA23K94D58"
+      ],
+      "signed_get_task_allow": false,
+      "profile_get_task_allow": false,
+      "has_provisioned_devices": false,
+      "checks": {
+        "signature_valid": true,
+        "expected_bundle_location": true,
+        "version_matches": true,
+        "build_matches": true,
+        "iphone_only": true,
+        "signed_family_controls": true,
+        "profile_family_controls": true,
+        "signed_app_group_matches": true,
+        "profile_app_group_matches": true,
+        "signed_team_matches": true,
+        "profile_team_matches": true,
+        "signed_application_identifier_matches": true,
+        "profile_application_identifier_matches": true,
+        "signed_get_task_allow_false": true,
+        "profile_get_task_allow_false": true,
+        "no_provisioned_devices": true,
+        "not_enterprise_profile": true,
+        "profile_not_expired": true
+      }
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ActivityReport",
+      "relative_path": "Extensions/ActivityReport.appex",
+      "version": "1.1.2",
+      "build": "9",
+      "device_family": [
+        1
+      ],
+      "signed_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "profile_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "signed_team": "VA23K94D58",
+      "profile_teams": [
+        "VA23K94D58"
+      ],
+      "signed_get_task_allow": false,
+      "profile_get_task_allow": false,
+      "has_provisioned_devices": false,
+      "checks": {
+        "signature_valid": true,
+        "expected_bundle_location": true,
+        "version_matches": true,
+        "build_matches": true,
+        "iphone_only": true,
+        "signed_family_controls": true,
+        "profile_family_controls": true,
+        "signed_app_group_matches": true,
+        "profile_app_group_matches": true,
+        "signed_team_matches": true,
+        "profile_team_matches": true,
+        "signed_application_identifier_matches": true,
+        "profile_application_identifier_matches": true,
+        "signed_get_task_allow_false": true,
+        "profile_get_task_allow_false": true,
+        "no_provisioned_devices": true,
+        "not_enterprise_profile": true,
+        "profile_not_expired": true,
+        "extensionkit_metadata_valid": true
+      },
+      "extensionkit_attributes": {
+        "EXExtensionPointIdentifier": "com.apple.deviceactivityui.report-extension"
+      },
+      "has_nsextension_key": false
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ActivityMonitor",
+      "relative_path": "PlugIns/ActivityMonitor.appex",
+      "version": "1.1.2",
+      "build": "9",
+      "device_family": [
+        1
+      ],
+      "signed_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "profile_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "signed_team": "VA23K94D58",
+      "profile_teams": [
+        "VA23K94D58"
+      ],
+      "signed_get_task_allow": false,
+      "profile_get_task_allow": false,
+      "has_provisioned_devices": false,
+      "checks": {
+        "signature_valid": true,
+        "expected_bundle_location": true,
+        "version_matches": true,
+        "build_matches": true,
+        "iphone_only": true,
+        "signed_family_controls": true,
+        "profile_family_controls": true,
+        "signed_app_group_matches": true,
+        "profile_app_group_matches": true,
+        "signed_team_matches": true,
+        "profile_team_matches": true,
+        "signed_application_identifier_matches": true,
+        "profile_application_identifier_matches": true,
+        "signed_get_task_allow_false": true,
+        "profile_get_task_allow_false": true,
+        "no_provisioned_devices": true,
+        "not_enterprise_profile": true,
+        "profile_not_expired": true
+      }
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ShieldAction",
+      "relative_path": "PlugIns/ShieldAction.appex",
+      "version": "1.1.2",
+      "build": "9",
+      "device_family": [
+        1
+      ],
+      "signed_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "profile_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "signed_team": "VA23K94D58",
+      "profile_teams": [
+        "VA23K94D58"
+      ],
+      "signed_get_task_allow": false,
+      "profile_get_task_allow": false,
+      "has_provisioned_devices": false,
+      "checks": {
+        "signature_valid": true,
+        "expected_bundle_location": true,
+        "version_matches": true,
+        "build_matches": true,
+        "iphone_only": true,
+        "signed_family_controls": true,
+        "profile_family_controls": true,
+        "signed_app_group_matches": true,
+        "profile_app_group_matches": true,
+        "signed_team_matches": true,
+        "profile_team_matches": true,
+        "signed_application_identifier_matches": true,
+        "profile_application_identifier_matches": true,
+        "signed_get_task_allow_false": true,
+        "profile_get_task_allow_false": true,
+        "no_provisioned_devices": true,
+        "not_enterprise_profile": true,
+        "profile_not_expired": true
+      }
+    },
+    {
+      "bundle_id": "dev.glebmelnikov.InstaBlock.ShieldConfiguration",
+      "relative_path": "PlugIns/ShieldConfiguration.appex",
+      "version": "1.1.2",
+      "build": "9",
+      "device_family": [
+        1
+      ],
+      "signed_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "profile_app_groups": [
+        "group.dev.glebmelnikov.InstaBlock"
+      ],
+      "signed_team": "VA23K94D58",
+      "profile_teams": [
+        "VA23K94D58"
+      ],
+      "signed_get_task_allow": false,
+      "profile_get_task_allow": false,
+      "has_provisioned_devices": false,
+      "checks": {
+        "signature_valid": true,
+        "expected_bundle_location": true,
+        "version_matches": true,
+        "build_matches": true,
+        "iphone_only": true,
+        "signed_family_controls": true,
+        "profile_family_controls": true,
+        "signed_app_group_matches": true,
+        "profile_app_group_matches": true,
+        "signed_team_matches": true,
+        "profile_team_matches": true,
+        "signed_application_identifier_matches": true,
+        "profile_application_identifier_matches": true,
+        "signed_get_task_allow_false": true,
+        "profile_get_task_allow_false": true,
+        "no_provisioned_devices": true,
+        "not_enterprise_profile": true,
+        "profile_not_expired": true
+      }
+    }
+  ],
+  "privacy_note": "Only selected signing and bundle metadata is retained. Local home paths, raw profiles, certificates, and credentials are omitted.",
+  "deep_signature_valid": true,
+  "report_uses_extensions_directory": true,
+  "passed": true,
+  "failed_checks": []
+}

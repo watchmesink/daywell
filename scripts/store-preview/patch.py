@@ -27,6 +27,7 @@ patch('ContentView.swift', [
      'if model.authorized, let selection = model.selection {'),
     ('model.snapshot.decision(at: context.date, calendar: .autoupdatingCurrent)',
      'model.snapshot.decision(at: MockUsage.now, calendar: .autoupdatingCurrent)'),
+    ('at: context.date)', 'at: MockUsage.now)'),
     ("""        let calendar = Calendar.autoupdatingCurrent
         let today = usageDay
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!

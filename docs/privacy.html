@@ -15,14 +15,19 @@
     <p>Daywell helps you set Screen Time boundaries on your own iPhone. Your choices and activity stay under your device's control.</p>
   </div></header>
   <main>
-    <p class="note">Effective October 8, 2026</p>
+    <p class="note">Effective October 27, 2026</p>
     <section>
       <h2>What Daywell accesses</h2>
       <p>With your permission, Daywell uses Apple's Screen Time APIs to let you choose individual apps, monitor your configured block windows and shared daily allowance, show today's usage, and display blocking shields. Apple presents the app picker and manages Screen Time authorization.</p>
     </section>
     <section>
       <h2>What stays on your device</h2>
-      <p>Daywell stores your chosen app tokens, block rules, and protection state in a local iOS App Group container shared with its own Screen Time extensions. The usage report is shown inside the app through Apple's Device Activity framework. Daywell does not send your selections, Screen Time activity, or rule state to the developer or an app server.</p>
+      <p>Daywell stores your chosen app tokens, block rules, and protection state in a local iOS App Group container shared with its own Screen Time extensions. The usage report is shown inside the app through Apple's Device Activity framework. Daywell does not automatically send your selections, Screen Time activity, rule state, or diagnostic logs to the developer or an app server.</p>
+    </section>
+    <section>
+      <h2>Optional problem reports</h2>
+      <p>Daywell keeps a small, rotating diagnostic history on your device to help explain blocking problems. It records blocking events, rule settings and changes, authorization status, device uptime and event timing, and error codes. The automatic logs do not include selected app or website names, selection tokens, browsing history, or the device's personal name or unique identifier.</p>
+      <p>If you choose Share problem, Daywell prepares a report containing this recent history, current protection settings, app and iOS versions, hardware model, time zone, and anything you enter in the form. The form displays device uptime before you choose to share it. Exact Screen Time usage measurements are not attached automatically; you may enter the value shown on the dashboard. You choose where to send the file using the iOS share sheet. Sharing is optional, and no report is sent automatically. Shared diagnostics are used only to investigate or respond to the reported problem.</p>
     </section>
     <section>
       <h2>Accounts, tracking, and payments</h2>
