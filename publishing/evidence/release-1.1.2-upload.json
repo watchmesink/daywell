@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-27T16:17:44.316377+00:00",
+  "appId": "6820666833",
+  "version": "1.1.2",
+  "build": "9",
+  "versionId": "3a03c755-1f3d-4549-86e4-cb2c9754b186",
+  "deliveryId": "a49fc9c4-9fd2-42a1-9255-d341a87cbff3",
+  "uploadState": "PROCESSING",
+  "uploadSucceeded": true,
+  "releaseType": "AFTER_APPROVAL",
+  "pullRequest": "https://github.com/watchmesink/daywell/pull/5",
+  "sourceCommit": "f85120b22923ba863eaeda48672a71065b9fc978",
+  "ipaSha256": "5e273f3ea37a27fe05ee3cbc2b88c796ceaea289b1654abb05c8df241ac08ad8"
+}

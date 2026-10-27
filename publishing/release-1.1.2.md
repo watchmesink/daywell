@@ -21,4 +21,6 @@ Prepared October 27, 2026, following the released version 1.1.1 (8).
 
 The initial build 9 upload was accepted. Final release checks identified missing required-reason API declarations in the new diagnostics, so build 10 supersedes that candidate. It adds privacy manifests to all five bundles and a prominent device-uptime disclosure before the user chooses to share a report. Build 9 will not be submitted for App Review.
 
+The final build 10 archive and App Store export succeeded. Its exact IPA passed the five-bundle signing, entitlement, profile, version/build, iPhone-only, ExtensionKit, and required-reason privacy-manifest checks. [Final IPA audit](evidence/release-1.1.2-build10-audit.json). The final simulator UI test also verified that uptime is visible before the user opens the native share sheet.
+
 The updated optional-report privacy policy is live at [the existing privacy URL](https://daywell-support.tunedtoast2.chatgpt.site/privacy.html); [deployment evidence](evidence/release-1.1.2-privacy-deployment.json). App Store processing and submission status will be recorded after Apple accepts the upload.
