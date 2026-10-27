@@ -12,7 +12,8 @@ DEVICE=${DEVICE:-iPhone 17 Pro}
 rm -rf "$WORK/src" && mkdir -p "$WORK/src" "$OUT"
 cp scripts/store-preview/project.yml "$WORK/"
 cp scripts/store-preview/Fixture.swift App/Components.swift App/ContentView.swift \
-   App/Editors.swift App/OceanSunsetArtwork.swift Shared/ProtectionEnvironment.swift Shared/ReportContext.swift "$WORK/src/"
+   App/Editors.swift App/OceanSunsetArtwork.swift App/ShareProblemView.swift \
+   App/ProblemReportExporter.swift Shared/ProtectionEnvironment.swift Shared/ReportContext.swift "$WORK/src/"
 python3 -I scripts/store-preview/patch.py "$WORK/src"
 
 UDID=$(xcrun simctl list devices available -j | python3 -I -c "

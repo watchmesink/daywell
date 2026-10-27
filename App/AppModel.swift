@@ -21,6 +21,7 @@ final class AppModel: ObservableObject {
             Task { @MainActor in
                 guard let self else { return }
                 let approved = status == .approved
+                ProtectionEnvironment.record("authorization.observed", details: ["status": String(describing: status)])
                 if self.authorized != approved { self.authorized = approved }
                 await self.refresh()
             }
@@ -39,17 +40,19 @@ final class AppModel: ObservableObject {
         guard !working else { return }
         working = true
         error = nil
+        ProtectionEnvironment.record("authorization.requested")
         do {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             authorized = AuthorizationCenter.shared.authorizationStatus == .approved
         } catch {
+            ProtectionEnvironment.record("authorization.failed", details: DiagnosticEvent.errorDetails(error))
             self.error = "Screen Time access could not be enabled. \(error.localizedDescription)"
         }
         working = false
         await refresh()
     }
 
-    func refresh(reconcileMonitors: Bool = true) async {
+    func refresh() async {
         guard !working, !refreshing else { return }
         refreshing = true
         let revision = editRevision
@@ -60,7 +63,7 @@ final class AppModel: ObservableObject {
         }
         let approved = AuthorizationCenter.shared.authorizationStatus == .approved
         if authorized != approved { authorized = approved }
-        let mayReconcile = authorized && reconcileMonitors
+        let mayReconcile = authorized
         do {
             let task = Task.detached(priority: .userInitiated) { () throws -> (ProtectionDocument, String?) in
                 let repository = try ProtectionEnvironment.repository()
@@ -71,7 +74,10 @@ final class AppModel: ObservableObject {
                 if mayReconcile {
                     do { try ProtectionEnvironment.coordinator().reconcile() }
                     catch RuleError.busy { /* Another process is committing a rule update. */ }
-                    catch { refreshError = error.localizedDescription }
+                    catch {
+                        ProtectionEnvironment.record("app.reconcile_failed", details: DiagnosticEvent.errorDetails(error))
+                        refreshError = error.localizedDescription
+                    }
                 }
                 let latest: ProtectionDocument
                 do { latest = try repository.read() }
@@ -85,9 +91,10 @@ final class AppModel: ObservableObject {
             // Polling unchanged storage must not invalidate the dashboard while
             // scrolling or rebuild its embedded Screen Time reports.
             if document != result.0 { document = result.0 }
-            if (reconcileMonitors || result.1 != nil), error != result.1 { error = result.1 }
+            if error != result.1 { error = result.1 }
         } catch {
             if revision == editRevision, !working, self.error != error.localizedDescription {
+                ProtectionEnvironment.record("app.refresh_failed", details: DiagnosticEvent.errorDetails(error))
                 self.error = error.localizedDescription
             }
         }
@@ -115,6 +122,7 @@ final class AppModel: ObservableObject {
             working = false
             return true
         } catch {
+            ProtectionEnvironment.record("app.edit_failed", details: DiagnosticEvent.errorDetails(error))
             self.error = error.localizedDescription
             working = false
             return false

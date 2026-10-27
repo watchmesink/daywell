@@ -57,6 +57,8 @@ Scheduled blocks apply to everything selected. Outside those windows, selected a
 
 **Platform boundary:** the device owner can bypass protection by uninstalling Daywell or revoking Screen Time access in Settings. App signing must remain valid. iOS controls delivery of monitoring callbacks; blocking and usage reporting can be delayed. This is not an unbreakable device-management lock.
 
+If protection behaves unexpectedly, tap **Share problem** at the bottom of the app. Add what happened and share a diagnostic report using the iOS share sheet. Reports include recent blocking events and settings, with selected app and website identities omitted from the automatic logs. Nothing is uploaded automatically.
+
 ## Build and install
 
 Requires macOS, Xcode with an iOS SDK, and iOS **17.4 or later**. The project has no third-party runtime dependencies. Development has been checked with Xcode 26.6 and XcodeGen 2.45.4.

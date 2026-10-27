@@ -44,11 +44,17 @@ struct ContentView: View {
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                 refreshUsageDay()
             }
+            .onChange(of: model.snapshot.cycles.first?.id) { _, _ in
+                // Foreground reconciliation also rotates the report's day if the
+                // significant-time notification was delayed or missed.
+                refreshUsageDay()
+            }
             .sheet(item: $sheet) { editor in
                 switch editor {
                 case .application: ApplicationEditor()
                 case .schedule: ScheduleEditor()
                 case .limit: LimitEditor()
+                case .problem: ShareProblemView()
                 }
             }
         }
@@ -126,7 +132,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     // Time updates affect the status copy, not remote reports or cards.
                     TimelineView(.periodic(from: .now, by: 15)) { context in
-                        statusSummary(model.snapshot.decision(at: context.date, calendar: .autoupdatingCurrent))
+                        statusSummary(model.snapshot.decision(at: context.date, calendar: .autoupdatingCurrent), at: context.date)
                     }
                     if model.authorized, let selection = model.selection, !selection.isEmpty {
                         Divider().overlay(Color.primary.opacity(0.25))
@@ -141,7 +147,7 @@ struct ContentView: View {
         .accessibilityIdentifier("protection-status")
     }
 
-    private func statusSummary(_ decision: ShieldDecision) -> some View {
+    private func statusSummary(_ decision: ShieldDecision, at now: Date) -> some View {
         VStack(alignment: .leading, spacing: 18) {
             Label(model.authorized ? (decision.isBlocked ? "BLOCK ACTIVE" : model.hasRules ? "TIME AVAILABLE" : "NO RULES SET") : "ACCESS NEEDED",
                   systemImage: model.authorized ? (decision.isBlocked ? "lock.fill" : "checkmark.circle.fill") : "exclamationmark.circle")
@@ -149,7 +155,7 @@ struct ContentView: View {
             Text(!model.authorized ? "Reconnect\nto your routine." : decision.isBlocked ? "A moment\naway from the screen." : model.hasRules ? "Enjoy your time.\nKeep your limits." : "Make room\nfor your day.")
                 .font(.system(size: 34, weight: .semibold, design: .rounded)).tracking(-1)
             if decision.budgetExhausted {
-                Text(ProtectionCopy.allowanceUsed).font(.subheadline)
+                Text(ProtectionCopy.allowanceUsed(resetsAt: decision.budgetResetsAt, now: now)).font(.subheadline)
             } else if let next = decision.nextScheduleTransition {
                 Text(decision.scheduled ? "Scheduled block ends at \(next, style: .time)." : "Next scheduled block at \(next, style: .time).")
                     .font(.subheadline)
@@ -320,6 +326,12 @@ struct ContentView: View {
 
     private var footer: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Button { sheet = .problem } label: {
+                Label("Share problem", systemImage: "square.and.arrow.up")
+            }
+            .font(.subheadline)
+            .padding(.bottom, 8)
+            .accessibilityIdentifier("share-problem")
             Label("No account required.", systemImage: "heart")
                 .font(.caption).foregroundStyle(.secondary)
             Text("iOS lets you bypass protection by uninstalling Daywell or revoking its Screen Time access in Settings.")
@@ -329,6 +341,6 @@ struct ContentView: View {
 }
 
 private enum EditorSheet: String, Identifiable {
-    case application, schedule, limit
+    case application, schedule, limit, problem
     var id: String { rawValue }
 }

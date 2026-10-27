@@ -14,17 +14,25 @@ struct DaywellApp: App {
             }
                 .environmentObject(model)
                 .tint(Brand.ink)
-                .task { await model.refresh() }
+                .task {
+                    ProtectionEnvironment.record("app.launched", details: ProblemReportExporter.environment())
+                    await model.refresh()
+                }
                 .onChange(of: scenePhase) { _, phase in
+                    ProtectionEnvironment.record("app.scene_changed", details: ["phase": String(describing: phase),
+                        "authorization": String(model.authorized), "timeZone": TimeZone.current.identifier])
                     if phase == .active { Task { await model.refresh() } }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                    ProtectionEnvironment.record("clock.significant_change", details: ["timeZone": TimeZone.current.identifier,
+                        "utcOffsetSeconds": String(TimeZone.current.secondsFromGMT())])
                     Task { await model.refresh() }
                 }
                 .onReceive(Timer.publish(every: 15, on: .main, in: .common).autoconnect()) { _ in
-                    // Threshold callbacks update shared storage in another process.
-                    // Pick them up while the dashboard stays open, too.
-                    if scenePhase == .active { Task { await model.refresh(reconcileMonitors: false) } }
+                    // Recover missed schedule/reset callbacks while the dashboard
+                    // stays open. Unchanged plans do not re-register monitors, and
+                    // AppModel avoids publishing unchanged state into the UI.
+                    if scenePhase == .active { Task { await model.refresh() } }
                 }
         }
     }

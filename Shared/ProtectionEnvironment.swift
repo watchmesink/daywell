@@ -8,16 +8,39 @@ import OSLog
 enum ProtectionEnvironment {
     static let logger = Logger(subsystem: "Daywell", category: "Protection")
 
-    static func repository() throws -> StateRepository {
+    private static func groupContainer() throws -> URL {
         guard let group = Bundle.main.object(forInfoDictionaryKey: "DaywellAppGroup") as? String,
               let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
             throw EnvironmentError.appGroupUnavailable
         }
-        return try StateRepository(directory: container.appendingPathComponent("Protection", isDirectory: true))
+        return container
+    }
+
+    static func repository() throws -> StateRepository {
+        try StateRepository(directory: groupContainer().appendingPathComponent("Protection", isDirectory: true))
+    }
+
+    static func diagnosticLog() throws -> DiagnosticLog {
+        try DiagnosticLog(directory: groupContainer().appendingPathComponent("Diagnostics", isDirectory: true))
+    }
+
+    static var diagnosticSource: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+        return "\(Bundle.main.bundleIdentifier ?? "Daywell") \(version) (\(build))"
+    }
+
+    static func record(_ name: String, details: [String: String] = [:], snapshot: ProtectionSnapshot? = nil) {
+        guard let log = try? diagnosticLog() else { return }
+        let now = Date()
+        log.record(DiagnosticEvent(name: name, source: diagnosticSource, date: now, details: details,
+            snapshot: snapshot.map { DiagnosticSnapshot($0, at: now, calendar: .autoupdatingCurrent) }))
     }
 
     static func coordinator() throws -> ProtectionCoordinator {
-        ProtectionCoordinator(repository: try repository(), driver: ScreenTimeDriver())
+        let diagnostics = try? diagnosticLog()
+        return ProtectionCoordinator(repository: try repository(), driver: ScreenTimeDriver(diagnostics: diagnostics),
+            diagnostics: diagnostics, diagnosticSource: diagnosticSource)
     }
 
     static func selection(from data: BlockingSelection) -> FamilyActivitySelection? {
@@ -58,6 +81,9 @@ final class ScreenTimeDriver: ProtectionDriver {
     private let center = DeviceActivityCenter()
     private let scheduleStore = ManagedSettingsStore(named: .init("instablock.schedule"))
     private let budgetStore = ManagedSettingsStore(named: .init("instablock.budget"))
+    private let diagnostics: DiagnosticLog?
+
+    init(diagnostics: DiagnosticLog? = nil) { self.diagnostics = diagnostics }
 
     var registeredNames: Set<String> { Set(center.activities.map(\.rawValue)) }
 
@@ -85,7 +111,29 @@ final class ScreenTimeDriver: ProtectionDriver {
                 applications: selection.applicationTokens, categories: selection.categoryTokens,
                 webDomains: selection.webDomainTokens, threshold: DateComponents(minute: minutes), includesPastActivity: true)
         }
-        try center.startMonitoring(.init(monitor.name), during: schedule, events: events)
+        if let diagnostics {
+            var fields = monitor.diagnosticDetails
+            fields["intervalStart"] = String(describing: schedule.intervalStart)
+            fields["intervalEnd"] = String(describing: schedule.intervalEnd)
+            fields["repeats"] = String(schedule.repeats)
+            if let event = events[.init(MonitorSpec.limitEvent)] {
+                fields["includesPastActivity"] = String(event.includesPastActivity)
+                fields["includesAllActivity"] = String(event.includesAllActivity)
+                fields["threshold"] = String(describing: event.threshold)
+            }
+            diagnostics.record(DiagnosticEvent(name: "monitor.system_request", source: ProtectionEnvironment.diagnosticSource, details: fields))
+        }
+        do {
+            try center.startMonitoring(.init(monitor.name), during: schedule, events: events)
+        } catch {
+            var fields = DiagnosticEvent.errorDetails(error)
+            fields["activity"] = monitor.name
+            if let monitoringError = error as? DeviceActivityCenter.MonitoringError {
+                fields["monitoringError"] = String(describing: monitoringError)
+            }
+            diagnostics?.record(DiagnosticEvent(name: "monitor.system_failed", source: ProtectionEnvironment.diagnosticSource, details: fields))
+            throw error
+        }
     }
 
     private func wallTime(_ minute: Int, zone: String) -> DateComponents {
@@ -99,6 +147,18 @@ final class ScreenTimeDriver: ProtectionDriver {
     }
 
     func apply(_ decision: ShieldDecision) {
+        let before = diagnostics == nil ? [:] : diagnosticShields
+        defer {
+            if let diagnostics {
+                let after = diagnosticShields
+                if before != after {
+                    var fields = after
+                    fields["requestedSchedule"] = String(decision.scheduled)
+                    fields["requestedBudget"] = String(decision.budgetExhausted)
+                    diagnostics.record(DiagnosticEvent(name: "shields.changed", source: ProtectionEnvironment.diagnosticSource, details: fields))
+                }
+            }
+        }
         // Clearing restrictions must also work if a saved token is no longer readable.
         guard decision.isBlocked, !decision.selection.isEmpty else {
             setShields(nil, in: scheduleStore)
@@ -107,6 +167,8 @@ final class ScreenTimeDriver: ProtectionDriver {
         }
         guard let selection = ProtectionEnvironment.selection(from: decision.selection), !selection.isEmpty else {
             ProtectionEnvironment.logger.error("Cannot decode selected tokens; retaining existing shields.")
+            diagnostics?.record(DiagnosticEvent(name: "shields.retained_invalid_selection", source: ProtectionEnvironment.diagnosticSource,
+                details: diagnosticShields))
             return
         }
         // Set every restrictive layer before clearing an inactive layer.
@@ -124,6 +186,59 @@ final class ScreenTimeDriver: ProtectionDriver {
         store.shield.webDomains = websites.isEmpty ? nil : websites
         store.shield.applicationCategories = categories.isEmpty ? nil : .specific(categories)
         store.shield.webDomainCategories = categories.isEmpty ? nil : .specific(categories)
+    }
+
+    /// Read back what iOS has registered, not just the plan saved by Daywell.
+    func diagnosticMonitors(selection: FamilyActivitySelection?) -> [[String: String]] {
+        center.activities.sorted { $0.rawValue < $1.rawValue }.map { activity in
+            var fields = ["activity": activity.rawValue]
+            if let schedule = center.schedule(for: activity) {
+                fields["intervalStart"] = String(describing: schedule.intervalStart)
+                fields["intervalEnd"] = String(describing: schedule.intervalEnd)
+                fields["repeats"] = String(schedule.repeats)
+                fields["nextIntervalStart"] = schedule.nextInterval.map { String($0.start.timeIntervalSince1970) } ?? "none"
+                fields["nextIntervalEnd"] = schedule.nextInterval.map { String($0.end.timeIntervalSince1970) } ?? "none"
+            } else {
+                fields["schedule"] = "missing"
+            }
+            let events = center.events(for: activity)
+            fields["eventCount"] = String(events.count)
+            for (name, event) in events {
+                let prefix = "event.\(name.rawValue)."
+                fields[prefix + "threshold"] = String(describing: event.threshold)
+                fields[prefix + "includesPastActivity"] = String(event.includesPastActivity)
+                fields[prefix + "includesAllActivity"] = String(event.includesAllActivity)
+                fields[prefix + "applications"] = String(event.applications.count)
+                fields[prefix + "categories"] = String(event.categories.count)
+                fields[prefix + "webDomains"] = String(event.webDomains.count)
+                if let selection {
+                    fields[prefix + "matchesActiveSelection"] = String(event.applications == selection.applicationTokens
+                        && event.categories == selection.categoryTokens && event.webDomains == selection.webDomainTokens)
+                }
+            }
+            return fields
+        }
+    }
+
+    var diagnosticShields: [String: String] {
+        var fields: [String: String] = [:]
+        for (name, store) in [("schedule", scheduleStore), ("budget", budgetStore)] {
+            fields[name + ".applications"] = String(store.shield.applications?.count ?? 0)
+            fields[name + ".webDomains"] = String(store.shield.webDomains?.count ?? 0)
+            fields[name + ".applicationCategories"] = categoryDescription(store.shield.applicationCategories)
+            fields[name + ".webDomainCategories"] = categoryDescription(store.shield.webDomainCategories)
+        }
+        return fields
+    }
+
+    private func categoryDescription<Activity>(_ policy: ShieldSettings.ActivityCategoryPolicy<Activity>?) -> String {
+        guard let policy else { return "unset" }
+        switch policy {
+        case .none: return "none"
+        case .all(let exceptions): return "all; exceptions=\(exceptions.count)"
+        case .specific(let categories, let exceptions): return "specific=\(categories.count); exceptions=\(exceptions.count)"
+        @unknown default: return "unknown"
+        }
     }
 }
 

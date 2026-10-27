@@ -23,6 +23,8 @@ Do not commit certificates, provisioning profiles, signing secrets, or `Local.xc
 
 For simulator interface checks, use Xcode's normal simulator signing or `CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=-`. Installing a build made with `CODE_SIGNING_ALLOWED=NO` omits its App Group entitlement and can produce a shared-storage error. Unsigned builds are compilation checks, not runnable entitlement checks.
 
+Before reusing a simulator, check for earlier Daywell builds with a different bundle prefix. For example, `org.opensource.InstaBlock` and `dev.glebmelnikov.InstaBlock` install as separate apps despite sharing the Daywell name and icon. Category shields owned by one can cover the other. Installing or launching the new bundle does not replace the old app or retire its restrictions. Use an isolated development simulator or back up and remove the obsolete simulator installation before testing. A shield displaying “Daywell can wait” does not by itself identify which installation owns it; check the shield extension's bundle identifier in the simulator system log.
+
 ## First launch
 
 Grant **individual Screen Time authorization** using the device owner's authentication. Choose one or more apps; categories and websites are outside this version. Review the schedule before activation because choosing apps during a scheduled window activates the block immediately.
