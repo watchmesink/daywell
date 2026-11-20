@@ -7,15 +7,43 @@ font. Writes PNGs without alpha for the 6.3" (1206 × 2622) and 6.9" (1320 × 28
 slots plus a contact sheet.
 """
 import sys
+from functools import cache
 from pathlib import Path
+from typing import NamedTuple
+
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 CAPTURES = ROOT / 'build/store-captures'
 OUT = ROOT / 'publishing/screenshots'
 FONT = '/System/Library/Fonts/SFNS.ttf'
+
 SOURCE_SIZE = (1206, 2622)
 SIZES = {'6.3-inch': (1206, 2622), '6.9-inch': (1320, 2868)}
+
+# Layout of a 6.3" slide. Wider slots scale by canvas width / SOURCE_SIZE[0].
+MARGIN = 92
+COPY_TOP = 140
+HEADLINE_SIZE = 110
+HEADLINE_LEADING = 118
+HEADLINE_GAP = 30
+SUBHEAD_SIZE = 46
+SUBHEAD_LEADING = 60
+PHONE_TOP = 700
+PHONE_INSET = 83
+BEZEL_WIDTH = 26
+SCREEN_RADIUS = 186
+SHADOW_DROP = 28
+SHADOW_ALPHA = 120
+SHADOW_BLUR = 44
+GLOW_RADIUS = 0.62
+GLOW_HEIGHT = 0.12
+GLOW_ALPHA = 150
+GLOW_BLUR = 0.18
+
+THUMBNAIL = (402, 874)
+CONTACT_GAP = 24
+FRAME_COLOR = (22, 22, 26)
 
 THEMES = {
     'light': {'ink': (14, 10, 28), 'soft': (84, 76, 100), 'top': (252, 233, 216),
@@ -23,50 +51,79 @@ THEMES = {
     'dark': {'ink': (255, 255, 255), 'soft': (206, 196, 214), 'top': (30, 21, 46),
              'bottom': (11, 8, 23), 'sun': (96, 52, 70), 'shadow': (0, 0, 0)},
 }
-BEZEL = (22, 22, 26)
 
-# (slug, capture, headline, subheadline). A capture ending in -dark or -light sets
-# the slide's theme. A newline in a headline forces the break; otherwise lines are balanced.
+
+class Slide(NamedTuple):
+    slug: str
+    capture: str
+    headline: str
+    subheadline: str
+
+
+class Phone(NamedTuple):
+    unit: float
+    bezel: int
+    width: int
+    height: int
+    screen_width: int
+    screen_height: int
+    x: int
+    top: int
+    radius: int
+
+
+# A capture ending in -dark or -light sets the slide's theme. A newline in a
+# headline forces the break; otherwise lines are balanced.
 SLIDES = [
-    ('01-choose-apps', 'apps-light.png',
-     'Choose the apps.\nThat\u2019s it.',
-     'Pick apps, whole categories, or websites in Apple\u2019s private Screen Time picker.'),
-    ('02-no-account', 'dashboard-dark.png',
-     'No account.\nNo sign-in.',
-     'Nothing to sign up for. No server, no analytics. Nothing leaves your iPhone.'),
-    ('03-shared-allowance', 'allowance-light.png',
-     'One allowance,\nshared.',
-     'Minutes add up across everything you pick. Then it\u2019s all blocked until tomorrow.'),
-    ('04-simple', 'dashboard-light.png',
-     'Simple\nby design.',
-     'One screen shows what\u2019s blocked, when, and today\u2019s usage.'),
-    ('05-private', 'apps-dark.png',
-     'Private\nby default.',
-     'Daywell never sees which apps you chose. Your rules stay on your iPhone.'),
-    ('06-your-routine', 'allowance-dark.png',
-     'Your time.\nYour routine.',
-     'Set daily blocks and a shared allowance that fit your day.'),
+    Slide('01-choose-apps', 'apps-light.png',
+          'Choose the apps.\nThat\u2019s it.',
+          'Pick apps, whole categories, or websites in Apple\u2019s private Screen Time picker.'),
+    Slide('02-no-account', 'dashboard-dark.png',
+          'No account.\nNo sign-in.',
+          'Nothing to sign up for. No server, no analytics. Nothing leaves your iPhone.'),
+    Slide('03-shared-allowance', 'allowance-light.png',
+          'One allowance,\nshared.',
+          'Minutes add up across everything you pick. Then it\u2019s all blocked until tomorrow.'),
+    Slide('04-simple', 'dashboard-light.png',
+          'Simple\nby design.',
+          'One screen shows what\u2019s blocked, when, and today\u2019s usage.'),
+    Slide('05-private', 'apps-dark.png',
+          'Private\nby default.',
+          'Daywell never sees which apps you chose. Your rules stay on your iPhone.'),
+    Slide('06-your-routine', 'allowance-dark.png',
+          'Your time.\nYour routine.',
+          'Set daily blocks and a shared allowance that fit your day.'),
 ]
 
 
+# Typography -----------------------------------------------------------------
+
 def font(size, weight):
-    f = ImageFont.truetype(FONT, size)
+    """Load the system font at `size` and select the named variation.
+
+    Some Pillow builds expect the variation name as bytes rather than str.
+    """
+    face = ImageFont.truetype(FONT, size)
     try:
-        f.set_variation_by_name(weight)
+        face.set_variation_by_name(weight)
     except (OSError, ValueError):
-        f.set_variation_by_name(weight.encode())
-    return f
+        face.set_variation_by_name(weight.encode())
+    return face
 
 
-def wrap(text, f, width):
-    # Fewest lines that fit, then the split that keeps those lines most even.
+def wrap(text, face, width):
+    """Fit `text` on the fewest lines, then even out a two-line break.
+
+    A newline is a forced break; each piece is wrapped on its own. A word wider
+    than `width` stays intact.
+    """
     if '\n' in text:
-        return [line for part in text.split('\n') for line in wrap(part, f, width)]
+        return [line for part in text.split('\n') for line in wrap(part, face, width)]
     words = text.split()
     lines, line = [], ''
     for word in words:
         trial = f'{line} {word}'.strip()
-        if f.getlength(trial) <= width or not line:
+        if face.getlength(trial) <= width or not line:
             line = trial
         else:
             lines.append(line)
@@ -74,115 +131,200 @@ def wrap(text, f, width):
     lines.append(line)
     if len(lines) != 2:
         return lines
-    best, best_width = lines, max(f.getlength(l) for l in lines)
-    for i in range(1, len(words)):
-        a, b = ' '.join(words[:i]), ' '.join(words[i:])
-        w = max(f.getlength(a), f.getlength(b))
-        if w <= width and w < best_width:
-            best, best_width = [a, b], w
+    best, best_width = lines, max(face.getlength(item) for item in lines)
+    for split in range(1, len(words)):
+        left, right = ' '.join(words[:split]), ' '.join(words[split:])
+        widest = max(face.getlength(left), face.getlength(right))
+        if widest <= width and widest < best_width:
+            best, best_width = [left, right], widest
     return best
 
 
 def fitted(text, size, weight, width):
-    # Shrink until every forced line fits on one line.
+    """Shrink a headline until each forced line fits on one line.
+
+    Gives up once the size drops below 40, even if a line still overflows.
+    """
     while True:
-        f = font(size, weight)
-        lines = wrap(text, f, width)
+        face = font(size, weight)
+        lines = wrap(text, face, width)
         if '\n' not in text or len(lines) == text.count('\n') + 1 or size < 40:
-            return f, lines
+            return face, lines
         size -= 2
 
 
-def rounded_mask(size, radius, scale=4):
+# Backdrop and device --------------------------------------------------------
+
+@cache
+def _rounded_mask(size, radius, scale):
     big = Image.new('L', (size[0] * scale, size[1] * scale), 0)
-    ImageDraw.Draw(big).rounded_rectangle((0, 0, big.width - 1, big.height - 1), radius * scale, fill=255)
+    ImageDraw.Draw(big).rounded_rectangle(
+        (0, 0, big.width - 1, big.height - 1), radius * scale, fill=255)
     return big.resize(size, Image.Resampling.LANCZOS)
 
 
-def background(size, theme):
-    w, h = size
-    top, bottom = theme['top'], theme['bottom']
-    column = Image.new('RGB', (1, h))
-    for y in range(h):
-        t = y / (h - 1)
-        column.putpixel((0, y), tuple(round(a + (b - a) * t) for a, b in zip(top, bottom)))
+def rounded_mask(size, radius, scale=4):
+    """Antialiased rounded-rectangle mask, drawn `scale` times larger.
+
+    Every slide of one canvas size uses the same frame and screen masks, so the
+    supersampled draw is cached. Each call gets its own image.
+    """
+    return _rounded_mask(tuple(size), radius, scale).copy()
+
+
+@cache
+def _background(size, top, bottom, sun):
+    width, height = size
+    column = Image.new('RGB', (1, height))
+    for y in range(height):
+        blend = y / (height - 1)
+        color = tuple(round(start + (end - start) * blend) for start, end in zip(top, bottom))
+        column.putpixel((0, y), color)
     canvas = column.resize(size)
     glow = Image.new('L', size, 0)
-    r = int(w * 0.62)
-    ImageDraw.Draw(glow).ellipse((w // 2 - r, int(h * 0.12) - r, w // 2 + r, int(h * 0.12) + r), fill=150)
-    glow = glow.filter(ImageFilter.GaussianBlur(w * 0.18))
-    canvas.paste(Image.new('RGB', size, theme['sun']), mask=glow)
+    radius = int(width * GLOW_RADIUS)
+    center_y = int(height * GLOW_HEIGHT)
+    ImageDraw.Draw(glow).ellipse(
+        (width // 2 - radius, center_y - radius, width // 2 + radius, center_y + radius),
+        fill=GLOW_ALPHA)
+    glow = glow.filter(ImageFilter.GaussianBlur(width * GLOW_BLUR))
+    canvas.paste(Image.new('RGB', size, sun), mask=glow)
     return canvas
+
+
+def background(size, theme):
+    """Vertical theme gradient with a soft sun near the top.
+
+    Slides that share a size and theme share one cached wash. The returned
+    image is a copy, so later drawing does not change the next slide.
+    """
+    wash = _background(tuple(size), tuple(theme['top']), tuple(theme['bottom']), tuple(theme['sun']))
+    return wash.copy()
+
+
+def phone_geometry(size):
+    """Frame and screen rectangles for a canvas of `size`, in pixels."""
+    width = size[0]
+    unit = width / SOURCE_SIZE[0]
+    bezel = round(BEZEL_WIDTH * unit)
+    phone_width = width - 2 * round(PHONE_INSET * unit)
+    screen_width = phone_width - 2 * bezel
+    scale = screen_width / SOURCE_SIZE[0]
+    screen_height = round(SOURCE_SIZE[1] * scale)
+    return Phone(
+        unit=unit,
+        bezel=bezel,
+        width=phone_width,
+        height=screen_height + 2 * bezel,
+        screen_width=screen_width,
+        screen_height=screen_height,
+        x=(width - phone_width) // 2,
+        top=round(PHONE_TOP * unit),
+        radius=round(SCREEN_RADIUS * scale),
+    )
+
+
+def draw_copy(canvas, theme, headline, sub):
+    width = canvas.size[0]
+    unit = width / SOURCE_SIZE[0]
+    margin = round(MARGIN * unit)
+    text_width = width - 2 * margin
+    draw = ImageDraw.Draw(canvas)
+    y = round(COPY_TOP * unit)
+    head, lines = fitted(headline, round(HEADLINE_SIZE * unit), 'Bold', text_width)
+    for line in lines:
+        draw.text((width / 2, y), line, font=head, fill=theme['ink'], anchor='ma')
+        y += round(HEADLINE_LEADING * unit)
+    y += round(HEADLINE_GAP * unit)
+    body = font(round(SUBHEAD_SIZE * unit), 'Regular')
+    for line in wrap(sub, body, text_width):
+        draw.text((width / 2, y), line, font=body, fill=theme['soft'], anchor='ma')
+        y += round(SUBHEAD_LEADING * unit)
+
+
+def place_phone(canvas, capture, theme, phone):
+    shadow = Image.new('L', canvas.size, 0)
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (phone.x, phone.top + round(SHADOW_DROP * phone.unit),
+         phone.x + phone.width, phone.top + phone.height),
+        phone.radius + phone.bezel, fill=SHADOW_ALPHA)
+    shadow = shadow.filter(ImageFilter.GaussianBlur(SHADOW_BLUR * phone.unit))
+    canvas.paste(Image.new('RGB', canvas.size, theme['shadow']), mask=shadow)
+
+    frame = Image.new('RGB', (phone.width, phone.height), FRAME_COLOR)
+    canvas.paste(frame, (phone.x, phone.top),
+                 rounded_mask((phone.width, phone.height), phone.radius + phone.bezel))
+    screen = capture.resize((phone.screen_width, phone.screen_height), Image.Resampling.LANCZOS)
+    canvas.paste(screen, (phone.x + phone.bezel, phone.top + phone.bezel),
+                 rounded_mask((phone.screen_width, phone.screen_height), phone.radius))
 
 
 def compose(size, capture, theme, headline, sub):
-    w, h = size
-    u = w / SOURCE_SIZE[0]
+    """Stack the copy, a shadow, and a framed capture on the sunset background."""
     canvas = background(size, theme)
-    draw = ImageDraw.Draw(canvas)
-
-    margin = round(92 * u)
-    y = round(140 * u)
-    head, lines = fitted(headline, round(110 * u), 'Bold', w - 2 * margin)
-    for line in lines:
-        draw.text((w / 2, y), line, font=head, fill=theme['ink'], anchor='ma')
-        y += round(118 * u)
-    y += round(30 * u)
-    body = font(round(46 * u), 'Regular')
-    for line in wrap(sub, body, w - 2 * margin):
-        draw.text((w / 2, y), line, font=body, fill=theme['soft'], anchor='ma')
-        y += round(60 * u)
-
-    phone_top = round(700 * u)
-    bezel = round(26 * u)
-    phone_w = w - 2 * round(83 * u)
-    screen_w = phone_w - 2 * bezel
-    scale = screen_w / SOURCE_SIZE[0]
-    screen_h = round(SOURCE_SIZE[1] * scale)
-    phone_h = screen_h + 2 * bezel
-    phone_x = (w - phone_w) // 2
-    radius = round(186 * scale)
-
-    shadow = Image.new('L', size, 0)
-    ImageDraw.Draw(shadow).rounded_rectangle(
-        (phone_x, phone_top + round(28 * u), phone_x + phone_w, phone_top + phone_h), radius + bezel, fill=120)
-    shadow = shadow.filter(ImageFilter.GaussianBlur(44 * u))
-    canvas.paste(Image.new('RGB', size, theme['shadow']), mask=shadow)
-
-    frame = Image.new('RGB', (phone_w, phone_h), BEZEL)
-    canvas.paste(frame, (phone_x, phone_top), rounded_mask((phone_w, phone_h), radius + bezel))
-    screen = capture.resize((screen_w, screen_h), Image.Resampling.LANCZOS)
-    canvas.paste(screen, (phone_x + bezel, phone_top + bezel), rounded_mask((screen_w, screen_h), radius))
+    draw_copy(canvas, theme, headline, sub)
+    place_phone(canvas, capture, theme, phone_geometry(size))
     return canvas
 
 
+# Rendering slides -----------------------------------------------------------
+
+def theme_of(capture_name):
+    """Theme for a capture whose stem ends in -light or -dark."""
+    return THEMES[Path(capture_name).stem.rsplit('-', 1)[1]]
+
+
+def clear_pngs(directory):
+    for old in directory.glob('*.png'):
+        old.unlink()
+
+
+def save_slide(directory, size, slide):
+    capture = Image.open(CAPTURES / slide.capture).convert('RGB')
+    assert capture.size == SOURCE_SIZE, f'{slide.capture}: {capture.size}'
+    image = compose(size, capture, theme_of(slide.capture), slide.headline, slide.subheadline)
+    path = directory / f'{slide.slug}.png'
+    image.save(path, optimize=True)
+    return image, path
+
+
+def write_contact_sheet(thumbnails):
+    if not thumbnails:
+        return
+    gap = CONTACT_GAP
+    thumb_width, thumb_height = THUMBNAIL
+    sheet = Image.new(
+        'RGB',
+        (len(thumbnails) * (thumb_width + gap) + gap, thumb_height + 2 * gap),
+        (255, 255, 255))
+    for index, thumbnail in enumerate(thumbnails):
+        sheet.paste(thumbnail, (gap + index * (thumb_width + gap), gap))
+    path = OUT / 'contact-sheet.png'
+    sheet.save(path, optimize=True)
+    print(path, sheet.size)
+
+
 def main():
+    """Write every size, or only the slides named as command-line arguments.
+
+    With no arguments, existing PNGs in each size folder are removed first.
+    The contact sheet is rebuilt from the 6.3" slides that were written.
+    """
     only = sys.argv[1:]
-    sheets = []
+    thumbnails = []
     for folder, size in SIZES.items():
-        out = OUT / folder
+        directory = OUT / folder
         if not only:
-            for old in out.glob('*.png'):
-                old.unlink()
-        out.mkdir(parents=True, exist_ok=True)
-        for slug, name, headline, sub in SLIDES:
-            if only and slug not in only:
+            clear_pngs(directory)
+        directory.mkdir(parents=True, exist_ok=True)
+        for slide in SLIDES:
+            if only and slide.slug not in only:
                 continue
-            capture = Image.open(CAPTURES / name).convert('RGB')
-            assert capture.size == SOURCE_SIZE, f'{name}: {capture.size}'
-            theme = THEMES[Path(name).stem.rsplit('-', 1)[1]]
-            image = compose(size, capture, theme, headline, sub)
-            image.save(out / f'{slug}.png', optimize=True)
+            image, path = save_slide(directory, size, slide)
             if folder == '6.3-inch':
-                sheets.append(image.resize((402, 874), Image.Resampling.LANCZOS))
-            print(out / f'{slug}.png', image.size)
-    if sheets:
-        gap = 24
-        sheet = Image.new('RGB', (len(sheets) * (402 + gap) + gap, 874 + 2 * gap), (255, 255, 255))
-        for i, s in enumerate(sheets):
-            sheet.paste(s, (gap + i * (402 + gap), gap))
-        sheet.save(OUT / 'contact-sheet.png', optimize=True)
-        print(OUT / 'contact-sheet.png', sheet.size)
+                thumbnails.append(image.resize(THUMBNAIL, Image.Resampling.LANCZOS))
+            print(path, image.size)
+    write_contact_sheet(thumbnails)
 
 
 if __name__ == '__main__':
