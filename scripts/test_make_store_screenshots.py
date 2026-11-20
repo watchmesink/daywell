@@ -321,6 +321,14 @@ class PaintingTests(unittest.TestCase):
                 self.assertEqual(got.mode, 'RGB')
                 self.assertEqual(got.tobytes(), reference_background(size, theme).tobytes())
 
+    def test_cached_background_is_not_shared_across_callers(self):
+        theme = self.module.THEMES['light']
+        first = self.module.background((48, 64), theme)
+        first.putpixel((0, 0), (1, 2, 3))
+        second = self.module.background((48, 64), theme)
+        self.assertEqual(second.tobytes(), reference_background((48, 64), theme).tobytes())
+        self.assertNotEqual(first.getpixel((0, 0)), second.getpixel((0, 0)))
+
     def test_rounded_mask_matches_the_supersampled_oracle(self):
         cases = [((40, 60), 12), ((40, 60), 12, 1), ((33, 33), 0), ((80, 20), 8, 3)]
         for args in cases:
@@ -330,6 +338,9 @@ class PaintingTests(unittest.TestCase):
         mask = self.module.rounded_mask((50, 70), 16)
         self.assertEqual(mask.getpixel((0, 0)), 0)
         self.assertEqual(mask.getpixel((25, 35)), 255)
+        mask.putpixel((25, 35), 0)
+        fresh = self.module.rounded_mask((50, 70), 16)
+        self.assertEqual(fresh.tobytes(), reference_mask((50, 70), 16).tobytes())
 
     def test_phone_geometry_is_independent_of_canvas_height(self):
         module = self.module

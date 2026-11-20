@@ -7,6 +7,7 @@ font. Writes PNGs without alpha for the 6.3" (1206 × 2622) and 6.9" (1320 × 28
 slots plus a contact sheet.
 """
 import sys
+from functools import cache
 from pathlib import Path
 from typing import NamedTuple
 
@@ -154,18 +155,26 @@ def fitted(text, size, weight, width):
 
 # Backdrop and device --------------------------------------------------------
 
-def rounded_mask(size, radius, scale=4):
-    """Antialiased rounded-rectangle mask, drawn `scale` times larger."""
+@cache
+def _rounded_mask(size, radius, scale):
     big = Image.new('L', (size[0] * scale, size[1] * scale), 0)
     ImageDraw.Draw(big).rounded_rectangle(
         (0, 0, big.width - 1, big.height - 1), radius * scale, fill=255)
     return big.resize(size, Image.Resampling.LANCZOS)
 
 
-def background(size, theme):
-    """Vertical theme gradient with a soft sun near the top."""
+def rounded_mask(size, radius, scale=4):
+    """Antialiased rounded-rectangle mask, drawn `scale` times larger.
+
+    Every slide of one canvas size uses the same frame and screen masks, so the
+    supersampled draw is cached. Each call gets its own image.
+    """
+    return _rounded_mask(tuple(size), radius, scale).copy()
+
+
+@cache
+def _background(size, top, bottom, sun):
     width, height = size
-    top, bottom = theme['top'], theme['bottom']
     column = Image.new('RGB', (1, height))
     for y in range(height):
         blend = y / (height - 1)
@@ -179,8 +188,18 @@ def background(size, theme):
         (width // 2 - radius, center_y - radius, width // 2 + radius, center_y + radius),
         fill=GLOW_ALPHA)
     glow = glow.filter(ImageFilter.GaussianBlur(width * GLOW_BLUR))
-    canvas.paste(Image.new('RGB', size, theme['sun']), mask=glow)
+    canvas.paste(Image.new('RGB', size, sun), mask=glow)
     return canvas
+
+
+def background(size, theme):
+    """Vertical theme gradient with a soft sun near the top.
+
+    Slides that share a size and theme share one cached wash. The returned
+    image is a copy, so later drawing does not change the next slide.
+    """
+    wash = _background(tuple(size), tuple(theme['top']), tuple(theme['bottom']), tuple(theme['sun']))
+    return wash.copy()
 
 
 def phone_geometry(size):
