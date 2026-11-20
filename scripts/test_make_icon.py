@@ -197,7 +197,7 @@ class ScriptTests(unittest.TestCase):
                 self.assertEqual(icon.size, (1024, 1024))
                 self.assertEqual(icon.getcolors(maxcolors=1), [(1024 * 1024, CROP_COLOR)])
             for relative in CATALOGS:
-                self.assertEqual((root / relative).read_text(), (REPO / relative).read_text())
+                self.assertEqual((root / relative).read_bytes(), (REPO / relative).read_bytes())
 
     def test_second_run_keeps_png_bytes_and_rewrites_catalogs(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -216,7 +216,25 @@ class ScriptTests(unittest.TestCase):
             shipped = REPO / 'App/Assets.xcassets/AppIcon.appiconset/Contents.json'
             self.assertEqual(app_icon.read_bytes(), original_png)
             self.assertEqual(app_icon.stat().st_mtime_ns, png_modified)
-            self.assertEqual(catalog.read_text(), shipped.read_text())
+            self.assertEqual(catalog.read_bytes(), shipped.read_bytes())
+
+    def test_unchanged_catalogs_keep_their_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            script = project_with_artwork(root)
+            run_script(script)
+
+            catalogs = [root / relative for relative in CATALOGS]
+            before = [(path.read_bytes(), path.stat().st_mtime_ns) for path in catalogs]
+            crlf = catalogs[0]
+            crlf.write_bytes(crlf.read_bytes().replace(b'\n', b'\r\n'))
+
+            run_script(script)
+
+            self.assertEqual(crlf.read_bytes(), (REPO / CATALOGS[0]).read_bytes())
+            for path, (content, modified) in zip(catalogs[1:], before[1:]):
+                self.assertEqual(path.read_bytes(), content)
+                self.assertEqual(path.stat().st_mtime_ns, modified)
 
     def test_artwork_change_replaces_both_icons(self):
         with tempfile.TemporaryDirectory() as tmp:

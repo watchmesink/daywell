@@ -75,8 +75,19 @@ def shield_catalog():
     }
 
 
+def catalog_text(payload):
+    return json.dumps(payload, indent=2) + '\n'
+
+
 def write_catalog(path, payload):
-    path.write_text(json.dumps(payload, indent=2) + '\n')
+    """Write catalog JSON unless the file already has those exact bytes.
+
+    A matching file keeps its existing bytes, same as an unchanged icon PNG.
+    """
+    data = catalog_text(payload).encode('utf-8')
+    if path.is_file() and path.read_bytes() == data:
+        return
+    path.write_bytes(data)
 
 
 def main(root=ROOT):
