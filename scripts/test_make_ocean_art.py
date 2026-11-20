@@ -3,6 +3,7 @@
 import hashlib
 import importlib.util
 import io
+import os
 import subprocess
 import sys
 import tempfile
@@ -153,6 +154,45 @@ class OceanArtScriptTests(unittest.TestCase):
             self.assertEqual(stdout.getvalue(), f'{image_path}\n')
             with Image.open(image_path) as saved:
                 self.assertEqual(saved.tobytes(), art.render_image(FIXTURE).tobytes())
+
+    def test_matching_files_keep_their_existing_bytes(self):
+        image = art.render_image(FIXTURE)
+        with tempfile.TemporaryDirectory() as directory:
+            catalog = Path(directory)
+            image_path = art.write_catalog(image, catalog)
+            optimized = image_path.read_bytes()
+            image.save(image_path, optimize=False)
+            self.assertNotEqual(image_path.read_bytes(), optimized)
+            catalog_json = catalog / 'Contents.json'
+            imageset_json = catalog / 'OceanSunset.imageset' / 'Contents.json'
+            stale_time = 1_000_000_000
+            for path in (image_path, catalog_json, imageset_json):
+                os.utime(path, ns=(stale_time, stale_time))
+            kept_png = image_path.read_bytes()
+            art.write_catalog(image, catalog)
+            self.assertEqual(image_path.read_bytes(), kept_png)
+            for path in (image_path, catalog_json, imageset_json):
+                self.assertEqual(path.stat().st_mtime_ns, stale_time)
+
+    def test_unreadable_png_is_replaced(self):
+        image = art.render_image(FIXTURE)
+        with tempfile.TemporaryDirectory() as directory:
+            catalog = Path(directory)
+            image_path = art.write_catalog(image, catalog)
+            image_path.write_bytes(b'not a png')
+            art.write_catalog(image, catalog)
+            fresh = art.write_catalog(image, Path(directory) / 'fresh')
+            self.assertEqual(image_path.read_bytes(), fresh.read_bytes())
+
+    def test_changed_artwork_replaces_the_png(self):
+        image = art.render_image(FIXTURE)
+        with tempfile.TemporaryDirectory() as directory:
+            catalog = Path(directory)
+            art.write_catalog(Image.new('RGB', image.size, '#000000'), catalog)
+            art.write_catalog(image, catalog)
+            fresh = art.write_catalog(image, Path(directory) / 'fresh')
+            saved = catalog / 'OceanSunset.imageset' / 'OceanSunset.png'
+            self.assertEqual(saved.read_bytes(), fresh.read_bytes())
 
     def test_generated_png_matches_the_bundled_file(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -67,16 +67,46 @@ def render_image(frame, cell=CELL, supersampling=SUPERSAMPLING):
     return image.resize(output_size, Image.Resampling.LANCZOS)
 
 
+def save_png_if_changed(image, path):
+    """Keep an existing PNG when its pixels already match.
+
+    Re-encoding can change the file bytes even when the picture is the same.
+    A new or different picture is still written with optimize=True.
+    """
+    if path.is_file():
+        try:
+            with Image.open(path) as existing:
+                same_pixels = (
+                    existing.size == image.size
+                    and existing.convert('RGB').tobytes() == image.tobytes()
+                )
+        except OSError:
+            same_pixels = False
+        if same_pixels:
+            return
+    image.save(path, optimize=True)
+
+
+def write_text_if_changed(path, text):
+    """Replace a catalog file only when its text would change."""
+    if path.is_file() and path.read_text() == text:
+        return
+    path.write_text(text)
+
+
 def write_catalog(image, catalog=None, name=IMAGESET_NAME):
-    """Write the PNG plus Xcode asset-catalog metadata. Return the PNG path."""
+    """Write the PNG and Xcode asset-catalog metadata. Return the PNG path."""
     if catalog is None:
         catalog = CATALOG
     asset = catalog / f'{name}.imageset'
     asset.mkdir(parents=True, exist_ok=True)
     image_path = asset / f'{name}.png'
-    image.save(image_path, optimize=True)
-    (catalog / 'Contents.json').write_text(json.dumps({'info': ASSET_INFO}, indent=2) + '\n')
-    (asset / 'Contents.json').write_text(json.dumps({
+    save_png_if_changed(image, image_path)
+    write_text_if_changed(
+        catalog / 'Contents.json',
+        json.dumps({'info': ASSET_INFO}, indent=2) + '\n',
+    )
+    write_text_if_changed(asset / 'Contents.json', json.dumps({
         'images': [{'filename': f'{name}.png', 'idiom': 'universal'}],
         'info': ASSET_INFO,
     }, indent=2) + '\n')
